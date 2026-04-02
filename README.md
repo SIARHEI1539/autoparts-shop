@@ -2,5 +2,5 @@
 ## Учебный проект
 
 ## Структура проекта:
-- ackend/ - Django REST Framework API
-- rontend/ - React приложение
+- backend/ - Django REST Framework API
+- frontend/ - React приложение
