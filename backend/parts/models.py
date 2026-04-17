@@ -67,6 +67,14 @@ class Part(models.Model):
         blank=True,
         verbose_name='Совместимость'
     )
+
+     # НОВОЕ ПОЛЕ ДЛЯ ФОТО
+    image = models.ImageField(
+        upload_to='parts/',
+        blank=True,
+        null=True,
+        verbose_name='Фото запчасти'
+    )
     
     # Дата добавления
     created_at = models.DateTimeField(
