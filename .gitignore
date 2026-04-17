@@ -12,3 +12,6 @@ db.sqlite3
 # VSCode
 .vscode/
 .idea/
+
+# Media files
+media/

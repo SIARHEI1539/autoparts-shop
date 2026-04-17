@@ -56,6 +56,16 @@ function PartsList() {
       <div className="parts-grid">
         {parts.map((part) => (
           <div key={part.id} className="part-card">
+              <div className="part-image">
+              {part.image ? (
+                <img 
+                  src={part.image} 
+                  alt={part.name}
+                />  
+              ) : (
+                <div className="no-image">📦</div>
+              )}
+            </div>
             <h3>{part.name}</h3>
             <p className="manufacturer">Производитель: {part.manufacturer}</p>
             <p className="sku">Артикул: {part.sku}</p>

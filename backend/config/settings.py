@@ -131,3 +131,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ALLOWED_ORIGINS = [
 #     "http://localhost:5173",  # Порт React-приложения
 # ]
+
+
+MEDIA_URL = '/media/'           # URL для доступа к картинкам
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Папка на диске
