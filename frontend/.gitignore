@@ -1,5 +1,3 @@
-gitignore
-
 # Logs
 logs
 *.log
@@ -19,6 +17,8 @@ dist-ssr
 
 # Local files
 *.local
+.env.local
+.env.production
 
 # Editor directories and files
 .vscode/*
