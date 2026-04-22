@@ -7,6 +7,7 @@ __pycache__/
 
 # Django
 db.sqlite3
+*.sqlite3
 .coverage
 
 # VSCode
@@ -15,3 +16,11 @@ db.sqlite3
 
 # Media files
 media/
+backend/media/
+
+# Generated data (JSON файлы от парсера/генератора)
+scripts/*.json
+
+# OS files
+.DS_Store
+Thumbs.db
