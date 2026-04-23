@@ -2,64 +2,46 @@ import React, { useState } from 'react';
 import './Header.css';
 
 function Header() {
-  // Состояние для поиска (пока просто храним, поиск сделаем позже)
-  const [searchTerm, setSearchTerm] = useState('');
-  // Количество товаров в корзине (пока заглушка, потом подключим)
-  const [cartCount, setCartCount] = useState(1);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [cartCount] = useState(3);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    console.log('Поиск:', searchTerm);
-    // Здесь позже добавим логику поиска
-  };
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const closeMenu = () => setMenuOpen(false);
 
   return (
     <header className="header">
-      <div className="header-top">
-        {/* Логотип */}
+      <div className="header-container">
+        {/* Логотип - ТОЛЬКО СЛЕВА */}
         <div className="logo">
           <a href="/">
-            <span className="logo-icon">🚗</span>
             <span className="logo-text">AUTOPARTS.BY</span>
           </a>
         </div>
 
-        {/* Поиск */}
-        <form className="search-form" onSubmit={handleSearch}>
-          <input
-            type="text"
-            placeholder="Поиск запчастей..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <button type="submit">🔍</button>
-        </form>
+        {/* Бургер (только для мобилок) */}
+        <button className="burger-menu" onClick={toggleMenu}>
+          <span className={`burger-line ${menuOpen ? 'open' : ''}`}></span>
+          <span className={`burger-line ${menuOpen ? 'open' : ''}`}></span>
+          <span className={`burger-line ${menuOpen ? 'open' : ''}`}></span>
+        </button>
 
-        {/* Иконки действий */}
-        <div className="header-actions">
-          <div className="cart-icon">
-            <a href="/cart">
-              🛒
-              {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
-            </a>
-          </div>
-          <div className="user-icon">
-            <a href="/login">👤</a>
-          </div>
-        </div>
+        {/* Меню - ТОЛЬКО СПРАВА */}
+        <nav className={`main-nav ${menuOpen ? 'open' : ''}`}>
+          <ul>
+            <li><a href="/" className="nav-link" onClick={closeMenu}>Главная</a></li>
+            <li><a href="/catalog" className="nav-link" onClick={closeMenu}>Каталог</a></li>
+            <li><a href="/favorites" className="nav-link" onClick={closeMenu}>Избранное</a></li>
+            <li className="cart-item">
+              <a href="/cart" className="nav-link cart-link" onClick={closeMenu}>
+                Корзина
+                {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
+              </a>
+            </li>
+            <li><a href="/profile" className="nav-link" onClick={closeMenu}>Профиль</a></li>
+            <li><a href="/logout" className="nav-link logout-link" onClick={closeMenu}>Выход</a></li>
+          </ul>
+        </nav>
       </div>
-
-      {/* Навигационное меню */}
-      <nav className="header-nav">
-        <ul>
-          <li><a href="/">Главная</a></li>
-          <li><a href="/parts">Запчасти</a></li>
-          <li><a href="/brands">Бренды</a></li>
-          <li><a href="/delivery">Доставка</a></li>
-          <li><a href="/contacts">Контакты</a></li>
-          <li><a href="/about">О нас</a></li>
-        </ul>
-      </nav>
     </header>
   );
 }
