@@ -1,0 +1,84 @@
+.category-page {
+  padding: 30px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.category-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.category-header h1 {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.category-header p {
+  color: #7f8c8d;
+}
+
+.parts-grid-category {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.part-card-category {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform 0.2s;
+}
+
+.part-card-category:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+
+.part-card-category h3 {
+  color: #2c3e50;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.part-card-category .manufacturer,
+.part-card-category .sku,
+.part-card-category .stock {
+  color: #7f8c8d;
+  font-size: 0.85rem;
+  margin: 5px 0;
+}
+
+.part-card-category .price {
+  color: #e74c3c;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.buy-button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.buy-button:hover {
+  background-color: #2980b9;
+}
+
+.loading, .empty {
+  text-align: center;
+  padding: 50px;
+  font-size: 1.2rem;
+  color: #7f8c8d;
+}
