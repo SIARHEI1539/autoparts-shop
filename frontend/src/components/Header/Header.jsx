@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './Header.css';
 
 function Header() {
@@ -11,34 +12,32 @@ function Header() {
   return (
     <header className="header">
       <div className="header-container">
-        {/* Логотип - ТОЛЬКО СЛЕВА */}
         <div className="logo">
-          <a href="/">
-            <span className="logo-text">AUTOPARTS.BY</span>
-          </a>
+          <Link to="/" onClick={closeMenu}>
+            <span className="logo-text">AUTOPARTS</span>
+            <span className="logo-domain">.BY</span>
+          </Link>
         </div>
 
-        {/* Бургер (только для мобилок) */}
         <button className="burger-menu" onClick={toggleMenu}>
           <span className={`burger-line ${menuOpen ? 'open' : ''}`}></span>
           <span className={`burger-line ${menuOpen ? 'open' : ''}`}></span>
           <span className={`burger-line ${menuOpen ? 'open' : ''}`}></span>
         </button>
 
-        {/* Меню - ТОЛЬКО СПРАВА */}
         <nav className={`main-nav ${menuOpen ? 'open' : ''}`}>
           <ul>
-            <li><a href="/" className="nav-link" onClick={closeMenu}>Главная</a></li>
-            <li><a href="/catalog" className="nav-link" onClick={closeMenu}>Каталог</a></li>
-            <li><a href="/favorites" className="nav-link" onClick={closeMenu}>Избранное</a></li>
+            <li><Link to="/" className="nav-link" onClick={closeMenu}>Главная</Link></li>
+            <li><Link to="/catalog" className="nav-link" onClick={closeMenu}>Каталог</Link></li>
+            <li><Link to="/favorites" className="nav-link" onClick={closeMenu}>Избранное</Link></li>
             <li className="cart-item">
-              <a href="/cart" className="nav-link cart-link" onClick={closeMenu}>
+              <Link to="/cart" className="nav-link cart-link" onClick={closeMenu}>
                 Корзина
                 {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
-              </a>
+              </Link>
             </li>
-            <li><a href="/profile" className="nav-link" onClick={closeMenu}>Профиль</a></li>
-            <li><a href="/logout" className="nav-link logout-link" onClick={closeMenu}>Выход</a></li>
+            <li><Link to="/profile" className="nav-link" onClick={closeMenu}>Профиль</Link></li>
+            <li><Link to="/logout" className="nav-link logout-link" onClick={closeMenu}>Выход</Link></li>
           </ul>
         </nav>
       </div>
