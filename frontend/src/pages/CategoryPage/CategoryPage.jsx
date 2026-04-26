@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import './CategoryPage.css';
 
@@ -33,6 +34,11 @@ function CategoryPage() {
     fetchParts();
   }, [id]);
 
+  const addToCart = (part) => {
+    console.log('Добавлено в корзину:', part.name);
+    // Здесь позже добавим логику корзины
+  };
+
   if (loading) {
     return <div className="loading">Загрузка запчастей...</div>;
   }
@@ -46,15 +52,27 @@ function CategoryPage() {
       {parts.length === 0 ? (
         <div className="empty">Нет запчастей в этой категории</div>
       ) : (
-        <div className="parts-grid-category">
+        <div className="products-grid">
           {parts.map((part) => (
-            <div key={part.id} className="part-card-category">
-              <h3>{part.name}</h3>
-              <p className="manufacturer">{part.manufacturer}</p>
-              <p className="sku">Артикул: {part.sku}</p>
-              <p className="price">{part.price} BYN</p>
-              <p className="stock">В наличии: {part.stock} шт.</p>
-              <button className="buy-button">В корзину</button>
+            <div key={part.id} className="product-card">
+              {/* Ссылка на страницу товара */}
+              <Link to={`/product/${part.id}`} className="product-link">
+                <div className="product-image">
+                  {part.image ? (
+                    <img src={part.image} alt={part.name} />
+                  ) : (
+                    <div className="no-image">🚗</div>
+                  )}
+                </div>
+                <h3 className="product-title">{part.name}</h3>
+                <p className="product-price">{part.price} BYN</p>
+              </Link>
+              <button 
+                className="add-to-cart"
+                onClick={() => addToCart(part)}
+              >
+                🛒 В корзину
+              </button>
             </div>
           ))}
         </div>
