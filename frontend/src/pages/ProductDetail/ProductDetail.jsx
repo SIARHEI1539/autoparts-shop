@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useCart } from '../../context/CartContext';
 import './ProductDetail.css';
 
 function ProductDetail() {
@@ -11,6 +12,8 @@ function ProductDetail() {
   const [activeTab, setActiveTab] = useState('specs');
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
+  const { addToCart } = useCart();
+
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -19,7 +22,6 @@ function ProductDetail() {
         const response = await axios.get(`http://127.0.0.1:8000/api/parts/${id}/`);
         setProduct(response.data);
         
-        // Проверяем, есть ли товар в избранном (из localStorage)
         const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
         setIsFavorite(favorites.includes(Number(id)));
       } catch (error) {
@@ -32,10 +34,6 @@ function ProductDetail() {
     fetchProduct();
   }, [id]);
 
-  const addToCart = () => {
-    console.log('Добавлено в корзину:', product?.name, 'x', quantity);
-  };
-
   const goBack = () => {
     navigate(-1);
   };
@@ -45,12 +43,10 @@ function ProductDetail() {
     const productId = Number(id);
     
     if (isFavorite) {
-      // Удаляем из избранного
       const newFavorites = favorites.filter(favId => favId !== productId);
       localStorage.setItem('favorites', JSON.stringify(newFavorites));
       setIsFavorite(false);
     } else {
-      // Добавляем в избранное
       favorites.push(productId);
       localStorage.setItem('favorites', JSON.stringify(favorites));
       setIsFavorite(true);
@@ -70,7 +66,11 @@ function ProductDetail() {
     'Артикул': product.sku,
     'Наличие': `${product.stock} шт.`,
     'Совместимость': product.compatibility || 'Универсальная',
-    'Категория': product.category,
+  };
+
+  const handleAddToCart = () => {
+  addToCart(product, quantity);
+  alert(`✅ Товар добавлен в корзину!`);
   };
 
   return (
@@ -92,41 +92,29 @@ function ProductDetail() {
           </div>
 
           <div className="product-detail-info">
-            <h1>{product.name}</h1>
+            <div className="product-header">
+              <h1>{product.name}</h1>
+              <button 
+                className={`favorite-btn ${isFavorite ? 'active' : ''}`}
+                onClick={toggleFavorite}
+              >
+                <span className="favorite-icon">{isFavorite ? '❤️' : '🤍'}</span>
+                <span className="favorite-text">{isFavorite ? 'В избранном' : 'В избранное'}</span>
+              </button>
+            </div>
             
             <div className="product-rating">
               <span className="stars">★★★★</span>
               <span className="rating-link">Написать отзыв</span>
             </div>
 
-            {/* Кнопка "В избранное" */}
-            <button 
-              className={`favorite-btn ${isFavorite ? 'active' : ''}`}
-              onClick={toggleFavorite}
-            >
-              <span className="favorite-icon">{isFavorite ? '❤️' : '🤍'}</span>
-              <span className="favorite-text">{isFavorite ? 'В избранном' : 'В избранное'}</span>
-            </button>
-
             <div className="product-specs">
-              <div className="spec-item">
-                <span className="spec-label">Бренд:</span>
-                <span className="spec-value">{product.manufacturer}</span>
-              </div>
-              <div className="spec-item">
-                <span className="spec-label">Артикул:</span>
-                <span className="spec-value">{product.sku}</span>
-              </div>
-              <div className="spec-item">
-                <span className="spec-label">Наличие:</span>
-                <span className="spec-value in-stock">В наличии: {product.stock} шт.</span>
-              </div>
-              {product.compatibility && (
-                <div className="spec-item">
-                  <span className="spec-label">Совместимость:</span>
-                  <span className="spec-value">{product.compatibility}</span>
+              {Object.entries(specs).map(([key, value]) => (
+                <div className="spec-item" key={key}>
+                  <span className="spec-label">{key}:</span>
+                  <span className="spec-value">{value}</span>
                 </div>
-              )}
+              ))}
             </div>
 
             <div className="product-price-section">
@@ -156,8 +144,8 @@ function ProductDetail() {
               </div>
             </div>
 
-            <button className="add-to-cart-btn" onClick={addToCart}>
-              В КОРЗИНУ
+            <button className="add-to-cart-btn" onClick={handleAddToCart}>
+               В КОРЗИНУ
             </button>
           </div>
         </div>
@@ -182,20 +170,12 @@ function ProductDetail() {
             {activeTab === 'specs' && (
               <div className="specs-content">
                 <p className="product-description-text">{product.description}</p>
-                <div className="specs-table">
-                  {Object.entries(specs).map(([key, value]) => (
-                    <div className="specs-row" key={key}>
-                      <span className="specs-label">{key}:</span>
-                      <span className="specs-value">{value}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             )}
             
             {activeTab === 'reviews' && (
               <div className="reviews-content">
-                <p>Отзывов пока нет. Будьте первым, кто оставит отзыв!</p>
+                <p>Отзывов пока нет. Будьте первым!</p>
               </div>
             )}
           </div>

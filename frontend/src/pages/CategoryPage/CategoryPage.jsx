@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import { useCart } from '../../context/CartContext';
 import './CategoryPage.css';
 
 const categoryNames = {
@@ -17,6 +18,7 @@ function CategoryPage() {
   const { id } = useParams();
   const [parts, setParts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { addToCart } = useCart();  // ← добавили корзину
 
   useEffect(() => {
     const fetchParts = async () => {
@@ -34,13 +36,17 @@ function CategoryPage() {
     fetchParts();
   }, [id]);
 
-  const addToCart = (part) => {
-    console.log('Добавлено в корзину:', part.name);
-    // Здесь позже добавим логику корзины
+  const handleAddToCart = (part) => {
+    addToCart(part, 1);
+    alert(`✅ ${part.name} добавлен в корзину!`);
   };
 
   if (loading) {
     return <div className="loading">Загрузка запчастей...</div>;
+  }
+
+  if (parts.length === 0) {
+    return <div className="empty">Нет запчастей в этой категории</div>;
   }
 
   return (
@@ -49,34 +55,29 @@ function CategoryPage() {
         <h1>{categoryNames[id] || id}</h1>
         <p>Найдено {parts.length} запчастей</p>
       </div>
-      {parts.length === 0 ? (
-        <div className="empty">Нет запчастей в этой категории</div>
-      ) : (
-        <div className="products-grid">
-          {parts.map((part) => (
-            <div key={part.id} className="product-card">
-              {/* Ссылка на страницу товара */}
-              <Link to={`/product/${part.id}`} className="product-link">
-                <div className="product-image">
-                  {part.image ? (
-                    <img src={part.image} alt={part.name} />
-                  ) : (
-                    <div className="no-image">🚗</div>
-                  )}
-                </div>
-                <h3 className="product-title">{part.name}</h3>
-                <p className="product-price">{part.price} BYN</p>
-              </Link>
-              <button 
-                className="add-to-cart"
-                onClick={() => addToCart(part)}
-              >
-                🛒 В корзину
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="products-grid">
+        {parts.map((part) => (
+          <div key={part.id} className="product-card">
+            <Link to={`/product/${part.id}`} className="product-link">
+              <div className="product-image">
+                {part.image ? (
+                  <img src={part.image} alt={part.name} />
+                ) : (
+                  <div className="no-image">🚗</div>
+                )}
+              </div>
+              <h3 className="product-title">{part.name}</h3>
+              <p className="product-price">{part.price} BYN</p>
+            </Link>
+            <button 
+              className="add-to-cart"
+              onClick={() => handleAddToCart(part)}
+            >
+              🛒 В корзину
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

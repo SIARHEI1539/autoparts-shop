@@ -4,7 +4,7 @@ import './Header.css';
 
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [cartCount] = useState(3);
+  const cartCount = 0;  // временно заглушка
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const closeMenu = () => setMenuOpen(false);
