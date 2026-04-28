@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useCart } from "../../context/CartContext";
 import './Header.css';
 
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const cartCount = 0;  // временно заглушка
+  const { getTotalCount } = useCart();
+  const cartCount = getTotalCount();
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const closeMenu = () => setMenuOpen(false);

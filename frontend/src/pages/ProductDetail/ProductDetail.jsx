@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../../context/CartContext';
+import Reviews from '../../components/Reviews/Reviews';
 import './ProductDetail.css';
 
 function ProductDetail() {
@@ -13,7 +14,10 @@ function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const { addToCart } = useCart();
-
+  
+  // Refs для скролла к форме отзыва
+  const reviewsTabRef = useRef(null);
+  const reviewsFormRef = useRef(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -53,6 +57,25 @@ function ProductDetail() {
     }
   };
 
+  const handleAddToCart = () => {
+    addToCart(product, quantity);
+    alert(`✅ ${product.name} добавлен в корзину!`);
+  };
+
+  // Функция для перехода к форме отзыва
+  const handleWriteReview = () => {
+    setActiveTab('reviews');
+    // Небольшая задержка, чтобы вкладка успела отрендериться
+    setTimeout(() => {
+      if (reviewsFormRef.current) {
+        reviewsFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Фокусируемся на поле имени
+        const nameInput = reviewsFormRef.current.querySelector('input');
+        if (nameInput) nameInput.focus();
+      }
+    }, 100);
+  };
+
   if (loading) {
     return <div className="loading">Загрузка...</div>;
   }
@@ -66,11 +89,6 @@ function ProductDetail() {
     'Артикул': product.sku,
     'Наличие': `${product.stock} шт.`,
     'Совместимость': product.compatibility || 'Универсальная',
-  };
-
-  const handleAddToCart = () => {
-  addToCart(product, quantity);
-  alert(`✅ Товар добавлен в корзину!`);
   };
 
   return (
@@ -105,7 +123,9 @@ function ProductDetail() {
             
             <div className="product-rating">
               <span className="stars">★★★★</span>
-              <span className="rating-link">Написать отзыв</span>
+              <span className="rating-link" onClick={handleWriteReview}>
+                Написать отзыв
+              </span>
             </div>
 
             <div className="product-specs">
@@ -145,12 +165,12 @@ function ProductDetail() {
             </div>
 
             <button className="add-to-cart-btn" onClick={handleAddToCart}>
-               В КОРЗИНУ
+              В КОРЗИНУ
             </button>
           </div>
         </div>
 
-        <div className="product-tabs">
+        <div className="product-tabs" ref={reviewsTabRef}>
           <div className="tabs-header">
             <button 
               className={`tab-btn ${activeTab === 'specs' ? 'active' : ''}`}
@@ -174,8 +194,8 @@ function ProductDetail() {
             )}
             
             {activeTab === 'reviews' && (
-              <div className="reviews-content">
-                <p>Отзывов пока нет. Будьте первым!</p>
+              <div ref={reviewsFormRef}>
+                <Reviews partId={product.id} />
               </div>
             )}
           </div>

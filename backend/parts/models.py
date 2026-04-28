@@ -95,3 +95,16 @@ class Part(models.Model):
         verbose_name = 'Запчасть'
         verbose_name_plural = 'Запчасти'
         ordering = ['-created_at']  # Сначала новые
+
+class Review(models.Model):
+    part = models.ForeignKey(Part, on_delete=models.CASCADE, related_name='reviews')
+    author = models.CharField(max_length=100, default='Аноним')
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.author} - {self.rating}★ - {self.part.name}'
+
+    class Meta:
+        ordering = ['-created_at']

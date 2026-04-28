@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Part
+from .models import Review
 
 class PartSerializer(serializers.ModelSerializer):
     """
@@ -11,3 +12,8 @@ class PartSerializer(serializers.ModelSerializer):
         model = Part  # Какую модель переводим
         fields = '__all__'  # Все поля модели включаем в JSON
         # Можно указать конкретные поля: fields = ['id', 'name', 'price']
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'part', 'author', 'rating', 'text', 'created_at']

@@ -89,9 +89,14 @@
 }
 
 .rating-link {
-  color: #999;
-  font-size: 14px;
+  color: #3498db;
   cursor: pointer;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.rating-link:hover {
+  color: #e74c3c;
   text-decoration: underline;
 }
 
