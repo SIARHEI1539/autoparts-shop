@@ -16,4 +16,11 @@ html, body, #root {
 
 body {
   background-color: #f5f5f5;
+  line-height: 1.2;
+}
+
+/* Убираем любые возможные отступы у всех элементов */
+h1, h2, h3, h4, p, ul, ol, li, div, section, article, header, footer, nav, main {
+  margin: 0;
+  padding: 0;
 }

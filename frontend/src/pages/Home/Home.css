@@ -1,5 +1,5 @@
 .home {
-  min-height: calc(100vh - 130px);
+  min-height: calc(100vh - 60px);
   background: url('https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80');
   background-size: cover;
   background-position: center 30%;
@@ -7,12 +7,21 @@
   align-items: center;
   justify-content: center;
   text-align: center;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  top: 0;
+  left: 0;
 }
 
 .hero {
   color: white;
   max-width: 800px;
   padding: 40px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 20px;
+  backdrop-filter: blur(2px);
+  margin: 0;
 }
 
 .hero h1 {
@@ -20,12 +29,14 @@
   margin-bottom: 20px;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
   color: #ffd700;
+  margin-top: 0;
 }
 
 .hero p {
   font-size: 1.2rem;
   margin-bottom: 30px;
   opacity: 0.95;
+  margin-top: 0;
 }
 
 .hero-button {
@@ -37,6 +48,7 @@
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s ease;
+  margin: 0;
 }
 
 .hero-button:hover {

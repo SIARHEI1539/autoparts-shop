@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import AuthModal from '../AuthModal/AuthModal';
 import './Reviews.css';
 
 function Reviews({ partId }) {
@@ -11,6 +12,11 @@ function Reviews({ partId }) {
     text: ''
   });
   const [submitting, setSubmitting] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  
+  // Проверяем, авторизован ли пользователь
+  const isAuthenticated = !!localStorage.getItem('access_token');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   // Загрузка отзывов
   useEffect(() => {
@@ -29,22 +35,32 @@ function Reviews({ partId }) {
     }
   };
 
-  // Отправка нового отзыва
+  // Отправка нового отзыва (только для авторизованных)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!newReview.author.trim() || !newReview.text.trim()) {
-      alert('Пожалуйста, заполните имя и текст отзыва');
+    
+    // Проверка авторизации
+    if (!isAuthenticated) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    
+    if (!newReview.text.trim()) {
+      alert('Пожалуйста, напишите текст отзыва');
       return;
     }
 
     setSubmitting(true);
     try {
-      await axios.post('http://127.0.0.1:8000/api/reviews/', {
+      // Если пользователь авторизован, подставляем его данные
+      const reviewData = {
         part: partId,
-        author: newReview.author,
+        author: user.first_name ? `${user.first_name} ${user.last_name}`.trim() || user.username : user.username,
         rating: newReview.rating,
         text: newReview.text
-      });
+      };
+      
+      await axios.post('http://127.0.0.1:8000/api/reviews/', reviewData);
       setNewReview({ author: '', rating: 5, text: '' });
       fetchReviews(); // перезагружаем список
       alert('Спасибо за отзыв!');
@@ -54,6 +70,11 @@ function Reviews({ partId }) {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleLoginSuccess = () => {
+    setIsAuthModalOpen(false);
+    // Можно перезагрузить страницу или просто закрыть модалку
   };
 
   // Рендер звёзд
@@ -66,68 +87,77 @@ function Reviews({ partId }) {
   }
 
   return (
-    <div className="reviews">
-      {/* Список отзывов */}
-      <div className="reviews-list">
-        <h3>Отзывы ({reviews.length})</h3>
-        {reviews.length === 0 ? (
-          <p className="no-reviews">Пока нет отзывов. Будьте первым!</p>
-        ) : (
-          reviews.map(review => (
-            <div key={review.id} className="review-item">
-              <div className="review-header">
-                <span className="review-author">{review.author}</span>
-                <span className="review-rating">{renderStars(review.rating)}</span>
-                <span className="review-date">
-                  {new Date(review.created_at).toLocaleDateString()}
-                </span>
+    <>
+      <div className="reviews">
+        {/* Список отзывов */}
+        <div className="reviews-list">
+          <h3>Отзывы ({reviews.length})</h3>
+          {reviews.length === 0 ? (
+            <p className="no-reviews">Пока нет отзывов. Будьте первым!</p>
+          ) : (
+            reviews.map(review => (
+              <div key={review.id} className="review-item">
+                <div className="review-header">
+                  <span className="review-author">{review.author}</span>
+                  <span className="review-rating">{renderStars(review.rating)}</span>
+                  <span className="review-date">
+                    {new Date(review.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+                <p className="review-text">{review.text}</p>
               </div>
-              <p className="review-text">{review.text}</p>
-            </div>
-          ))
-        )}
-      </div>
+            ))
+          )}
+        </div>
 
-      {/* Форма добавления отзыва */}
-      <div className="review-form">
-        <h4>Оставить отзыв</h4>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <input
-              type="text"
-              placeholder="Ваше имя"
-              value={newReview.author}
-              onChange={(e) => setNewReview({...newReview, author: e.target.value})}
-              required
-            />
-          </div>
-          <div className="form-group">
-            <select
-              value={newReview.rating}
-              onChange={(e) => setNewReview({...newReview, rating: parseInt(e.target.value)})}
-            >
-              <option value="5">5 ★ - Отлично</option>
-              <option value="4">4 ★ - Хорошо</option>
-              <option value="3">3 ★ - Средне</option>
-              <option value="2">2 ★ - Плохо</option>
-              <option value="1">1 ★ - Ужасно</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <textarea
-              placeholder="Ваш отзыв..."
-              value={newReview.text}
-              onChange={(e) => setNewReview({...newReview, text: e.target.value})}
-              rows={4}
-              required
-            />
-          </div>
-          <button type="submit" disabled={submitting}>
-            {submitting ? 'Отправка...' : 'Отправить отзыв'}
-          </button>
-        </form>
+        {/* Форма добавления отзыва */}
+        <div className="review-form">
+          <h4>Оставить отзыв</h4>
+          
+          {!isAuthenticated ? (
+            <div className="login-to-review">
+              <p>Чтобы оставить отзыв, пожалуйста, войдите в аккаунт.</p>
+              <button className="login-to-review-btn" onClick={() => setIsAuthModalOpen(true)}>
+                Войти
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <select
+                  value={newReview.rating}
+                  onChange={(e) => setNewReview({...newReview, rating: parseInt(e.target.value)})}
+                >
+                  <option value="5">5 ★ - Отлично</option>
+                  <option value="4">4 ★ - Хорошо</option>
+                  <option value="3">3 ★ - Средне</option>
+                  <option value="2">2 ★ - Плохо</option>
+                  <option value="1">1 ★ - Ужасно</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <textarea
+                  placeholder="Ваш отзыв..."
+                  value={newReview.text}
+                  onChange={(e) => setNewReview({...newReview, text: e.target.value})}
+                  rows={4}
+                  required
+                />
+              </div>
+              <button type="submit" disabled={submitting}>
+                {submitting ? 'Отправка...' : 'Отправить отзыв'}
+              </button>
+            </form>
+          )}
+        </div>
       </div>
-    </div>
+      
+      <AuthModal 
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onLogin={handleLoginSuccess}
+      />
+    </>
   );
 }
 

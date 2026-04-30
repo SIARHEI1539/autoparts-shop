@@ -5,28 +5,26 @@
   font-family: 'Inter', sans-serif;
 }
 
-/* Хедер */
 .header {
   background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   position: sticky;
   top: 0;
   z-index: 1000;
+  margin: 0;
+  padding: 0;
 }
 
 .header-container {
   width: 100%;
-  max-width: 100%;
   padding: 0 24px;
   display: flex;
-  align-items: center;  /* ← вертикальное выравнивание по центру */
+  align-items: center;
   justify-content: space-between;
-  height: 70px;
+  height: 60px;
   margin: 0;
-  gap: 20px;
+  box-sizing: border-box;
 }
 
-/* Логотип */
 .logo a {
   text-decoration: none;
   display: flex;
@@ -52,7 +50,6 @@
   letter-spacing: 0.5px;
 }
 
-/* Навигация */
 .main-nav ul {
   display: flex;
   align-items: center;
@@ -62,69 +59,82 @@
   padding: 0;
 }
 
-.nav-link {
+.main-nav li {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-link, 
+.favorites-btn, 
+.cart-link, 
+.login-btn, 
+.logout-btn, 
+.user-name-btn {
   text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
   font-size: 14px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.85);
   padding: 8px 12px;
   border-radius: 8px;
   transition: all 0.2s ease;
-  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  font-family: inherit;
+  margin: 0;
+  line-height: 1;
 }
 
-.nav-link:hover {
+.nav-link:hover,
+.favorites-btn:hover,
+.cart-link:hover,
+.login-btn:hover,
+.logout-btn:hover,
+.user-name-btn:hover {
   background: rgba(231, 76, 60, 0.15);
   color: #e74c3c;
 }
 
-/* Корзина */
-.cart-item {
+.cart-item,
+.favorites-item {
   position: relative;
   display: flex;
   align-items: center;
+  margin: 0;
+  padding: 0;
 }
 
-.cart-link {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.cart-count {
+.cart-count,
+.favorites-count {
   position: absolute;
-  top: -8px;
-  right: -12px;
+  top: -6px;
+  right: -10px;
   background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
   color: white;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 18px;
-  display: inline-flex;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 16px;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  padding: 0 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  line-height: 1;
 }
 
-/* Выход */
 .logout-link {
   color: rgba(255, 255, 255, 0.6);
   margin-left: 8px;
 }
 
-.logout-link:hover {
-  background: rgba(231, 76, 60, 0.15);
-  color: #e74c3c;
-}
-
-/* Бургер-меню (скрыто на десктопе) */
 .burger-menu {
   display: none;
   flex-direction: column;
@@ -157,7 +167,6 @@
   transform: translateY(-9px) rotate(-45deg);
 }
 
-/* Адаптивность */
 @media (max-width: 900px) {
   .header-container {
     height: 60px;
@@ -197,7 +206,12 @@
     gap: 8px;
   }
 
-  .nav-link {
+  .nav-link,
+  .favorites-btn,
+  .cart-link,
+  .login-btn,
+  .logout-btn,
+  .user-name-btn {
     display: block;
     padding: 12px 16px;
     white-space: normal;
@@ -211,65 +225,41 @@
     border-radius: 0;
     padding-top: 16px;
   }
-  
-  .cart-count {
-    top: -6px;
-    right: -10px;
+
+  .cart-count,
+  .favorites-count {
+    top: 4px;
+    right: 16px;
   }
 }
 
-.login-btn, .logout-btn {
-  background: none;
+/* Полный сброс для хедера */
+.header,
+.header-container,
+.main-nav,
+.main-nav ul,
+.main-nav li,
+.cart-item,
+.favorites-item {
+  margin: 0;
+  padding: 0;
   border: none;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  padding: 8px 12px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
 }
 
-.login-btn:hover, .logout-btn:hover {
-  background: rgba(231, 76, 60, 0.15);
-  color: #e74c3c;
+.header-container {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.user-name {
-  cursor: default;
-  opacity: 0.8;
+.main-nav ul {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-.user-name-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  padding: 8px 12px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.user-name-btn:hover {
-  background: rgba(231, 76, 60, 0.15);
-  color: #e74c3c;
-}
-
-.login-btn, .logout-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  padding: 8px 12px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.login-btn:hover, .logout-btn:hover {
-  background: rgba(231, 76, 60, 0.15);
-  color: #e74c3c;
+.main-nav li {
+  display: flex;
+  align-items: center;
 }

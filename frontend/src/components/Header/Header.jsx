@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import AuthModal from '../AuthModal/AuthModal';
 import ProfileModal from '../ProfileModal/ProfileModal';
@@ -10,6 +10,8 @@ function Header() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [favoritesCount, setFavoritesCount] = useState(0);
+  const navigate = useNavigate();
   const { getTotalCount } = useCart();
   const cartCount = getTotalCount();
 
@@ -18,10 +20,17 @@ function Header() {
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
+    updateFavoritesCount();
   }, []);
+
+  const updateFavoritesCount = () => {
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    setFavoritesCount(favorites.length);
+  };
 
   const handleLogin = (userData) => {
     setUser(userData);
+    updateFavoritesCount();
   };
 
   const handleUpdateUser = (updatedUser) => {
@@ -33,6 +42,17 @@ function Header() {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
     setUser(null);
+  };
+
+  // Проверка авторизации перед переходом
+  const handleProtectedClick = (e, path) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      e.preventDefault();
+      setIsAuthModalOpen(true);
+    } else {
+      navigate(path);
+    }
   };
 
   const toggleMenu = () => setMenuOpen(!menuOpen);
@@ -59,12 +79,23 @@ function Header() {
             <ul>
               <li><Link to="/" className="nav-link" onClick={closeMenu}>Главная</Link></li>
               <li><Link to="/catalog" className="nav-link" onClick={closeMenu}>Каталог</Link></li>
-              <li><Link to="/favorites" className="nav-link" onClick={closeMenu}>Избранное</Link></li>
+              <li className="favorites-item">
+                <button 
+                  className="nav-link favorites-btn"
+                  onClick={(e) => handleProtectedClick(e, '/favorites')}
+                >
+                  Избранное
+                  {favoritesCount > 0 && <span className="favorites-count">{favoritesCount}</span>}
+                </button>
+              </li>
               <li className="cart-item">
-                <Link to="/cart" className="nav-link cart-link" onClick={closeMenu}>
+                <button 
+                  className="nav-link cart-link"
+                  onClick={(e) => handleProtectedClick(e, '/cart')}
+                >
                   Корзина
                   {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
-                </Link>
+                </button>
               </li>
               {user ? (
                 <>

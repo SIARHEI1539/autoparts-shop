@@ -106,3 +106,32 @@
   padding: 40px;
   color: #7f8c8d;
 }
+
+.login-to-review {
+  text-align: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin: 10px 0;
+}
+
+.login-to-review p {
+  margin-bottom: 12px;
+  color: #666;
+  font-size: 14px;
+}
+
+.login-to-review-btn {
+  background: #2c3e50;
+  color: white;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.login-to-review-btn:hover {
+  background: #e74c3c;
+}

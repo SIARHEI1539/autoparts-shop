@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useCart } from '../../context/CartContext';
+import AuthModal from '../../components/AuthModal/AuthModal';
 import './CategoryPage.css';
 
 const categoryNames = {
@@ -18,7 +19,8 @@ function CategoryPage() {
   const { id } = useParams();
   const [parts, setParts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { addToCart } = useCart();  // ← добавили корзину
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchParts = async () => {
@@ -37,6 +39,11 @@ function CategoryPage() {
   }, [id]);
 
   const handleAddToCart = (part) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setIsAuthModalOpen(true);
+      return;
+    }
     addToCart(part, 1);
     alert(`✅ ${part.name} добавлен в корзину!`);
   };
@@ -50,35 +57,43 @@ function CategoryPage() {
   }
 
   return (
-    <div className="category-page">
-      <div className="category-header">
-        <h1>{categoryNames[id] || id}</h1>
-        <p>Найдено {parts.length} запчастей</p>
+    <>
+      <div className="category-page">
+        <div className="category-header">
+          <h1>{categoryNames[id] || id}</h1>
+          <p>Найдено {parts.length} запчастей</p>
+        </div>
+        <div className="products-grid">
+          {parts.map((part) => (
+            <div key={part.id} className="product-card">
+              <Link to={`/product/${part.id}`} className="product-link">
+                <div className="product-image">
+                  {part.image ? (
+                    <img src={part.image} alt={part.name} />
+                  ) : (
+                    <div className="no-image">🚗</div>
+                  )}
+                </div>
+                <h3 className="product-title">{part.name}</h3>
+                <p className="product-price">{part.price} BYN</p>
+              </Link>
+              <button 
+                className="add-to-cart"
+                onClick={() => handleAddToCart(part)}
+              >
+                🛒 В корзину
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="products-grid">
-        {parts.map((part) => (
-          <div key={part.id} className="product-card">
-            <Link to={`/product/${part.id}`} className="product-link">
-              <div className="product-image">
-                {part.image ? (
-                  <img src={part.image} alt={part.name} />
-                ) : (
-                  <div className="no-image">🚗</div>
-                )}
-              </div>
-              <h3 className="product-title">{part.name}</h3>
-              <p className="product-price">{part.price} BYN</p>
-            </Link>
-            <button 
-              className="add-to-cart"
-              onClick={() => handleAddToCart(part)}
-            >
-              🛒 В корзину
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
+      
+      <AuthModal 
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onLogin={() => {}}
+      />
+    </>
   );
 }
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { CartProvider } from '../context/CartContext';
+import ProtectedRoute from '../components/ProtectedRoute/ProtectedRoute';
 import Layout from '../components/Layout/Layout';
 import Home from '../pages/Home/Home';
 import Catalog from '../pages/Catalog/Catalog';
@@ -20,8 +21,17 @@ function App() {
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/category/:id" element={<CategoryPage />} />
             <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/favorites" element={<Favorites />} />
-            <Route path="/cart" element={<Cart />} />
+            {/* Защищённые маршруты */}
+            <Route path="/favorites" element={
+              <ProtectedRoute>
+                <Favorites />
+              </ProtectedRoute>
+            } />
+            <Route path="/cart" element={
+              <ProtectedRoute>
+                <Cart />
+              </ProtectedRoute>
+            } />
           </Routes>
         </Layout>
       </BrowserRouter>
