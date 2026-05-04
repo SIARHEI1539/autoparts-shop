@@ -12,32 +12,60 @@ function Header() {
   const [user, setUser] = useState(null);
   const [favoritesCount, setFavoritesCount] = useState(0);
   const navigate = useNavigate();
-  const { getTotalCount } = useCart();
+  const { getTotalCount, clearCart, loadCartFromServer, loadFavoritesFromServer, getFavoritesCount, favorites } = useCart();
   const cartCount = getTotalCount();
+
+  // Обновление счётчика избранного
+  const updateFavoritesCount = () => {
+    const token = localStorage.getItem('access_token');
+    let count = 0;
+    
+    if (token) {
+      count = getFavoritesCount();
+      console.log('❤️ Счётчик избранного (сервер):', count);
+    } else {
+      const favs = JSON.parse(localStorage.getItem('favorites') || '[]');
+      count = favs.length;
+      console.log('❤️ Счётчик избранного (локальный):', count);
+    }
+    
+    setFavoritesCount(count);
+  };
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
+    const token = localStorage.getItem('access_token');
+    
+    console.log('🔍 Header загружен, токен:', !!token, 'пользователь:', savedUser);
+    
+    if (savedUser && token) {
       setUser(JSON.parse(savedUser));
+      loadCartFromServer();
+      loadFavoritesFromServer();
     }
+    
     updateFavoritesCount();
     
-    window.addEventListener('storage', updateFavoritesCount);
+    // Слушаем обновления избранного
     window.addEventListener('favoritesUpdated', updateFavoritesCount);
+    window.addEventListener('storage', updateFavoritesCount);
     
     return () => {
-      window.removeEventListener('storage', updateFavoritesCount);
       window.removeEventListener('favoritesUpdated', updateFavoritesCount);
+      window.removeEventListener('storage', updateFavoritesCount);
     };
   }, []);
 
-  const updateFavoritesCount = () => {
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    setFavoritesCount(favorites.length);
-  };
+  // Следим за изменением favorites в контексте
+  useEffect(() => {
+    updateFavoritesCount();
+  }, [favorites]);
 
-  const handleLogin = (userData) => {
+  const handleLogin = async (userData) => {
+    console.log('🟢 Вход выполнен, загрузка данных...');
     setUser(userData);
+    await loadCartFromServer();
+    await loadFavoritesFromServer();
     updateFavoritesCount();
   };
 
@@ -46,11 +74,19 @@ function Header() {
   };
 
   const handleLogout = () => {
+    console.log('🔴 Выход из аккаунта, очистка данных...');
+    
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
+    
+    clearCart();
+    localStorage.removeItem('favorites');
+    
     setUser(null);
-    updateFavoritesCount();
+    setFavoritesCount(0);
+    
+    navigate('/');
   };
 
   const handleProtectedClick = (e, path) => {

@@ -1,19 +1,33 @@
 from rest_framework import serializers
-from .models import Part
-from .models import Review
+from .models import Part, Review, Cart, Favorite
 
 class PartSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для модели Part
-    Превращает объект Part в JSON и обратно
-    """
-    
     class Meta:
-        model = Part  # Какую модель переводим
-        fields = '__all__'  # Все поля модели включаем в JSON
-        # Можно указать конкретные поля: fields = ['id', 'name', 'price']
+        model = Part
+        fields = '__all__'
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ['id', 'part', 'author', 'rating', 'text', 'created_at']
+
+
+class CartSerializer(serializers.ModelSerializer):
+    part = PartSerializer(read_only=True)
+    part_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = Cart
+        fields = ['id', 'user', 'part', 'part_id', 'quantity']
+        read_only_fields = ['user']
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    part = PartSerializer(read_only=True)
+    part_id = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = Favorite
+        fields = ['id', 'user', 'part', 'part_id']
+        read_only_fields = ['user']

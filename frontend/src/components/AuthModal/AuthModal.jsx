@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useCart } from '../../context/CartContext';
 import './AuthModal.css';
 
 function AuthModal({ isOpen, onClose, onLogin }) {
@@ -23,6 +24,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const { syncLocalCart, loadCartFromServer, loadFavoritesFromServer, syncLocalFavorites } = useCart();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -44,6 +46,8 @@ function AuthModal({ isOpen, onClose, onLogin }) {
 
     try {
       if (isLogin) {
+        console.log('🟢 Вход в аккаунт...');
+        
         const response = await axios.post('http://127.0.0.1:8000/api/token/', {
           username: formData.username,
           password: formData.password
@@ -51,15 +55,42 @@ function AuthModal({ isOpen, onClose, onLogin }) {
         
         localStorage.setItem('access_token', response.data.access);
         localStorage.setItem('refresh_token', response.data.refresh);
+        console.log('✅ Токены сохранены');
+        
+        // Синхронизируем локальную корзину
+        const localCart = localStorage.getItem('local_cart');
+        console.log('📦 Локальная корзина:', localCart);
+        if (localCart) {
+          await syncLocalCart(JSON.parse(localCart));
+          localStorage.removeItem('local_cart');
+          console.log('✅ Локальная корзина синхронизирована');
+        }
+        
+        // Синхронизируем локальное избранное
+        const localFavorites = localStorage.getItem('local_favorites');
+        console.log('❤️ Локальное избранное:', localFavorites);
+        if (localFavorites) {
+          await syncLocalFavorites(JSON.parse(localFavorites));
+          localStorage.removeItem('local_favorites');
+          console.log('✅ Локальное избранное синхронизировано');
+        }
+        
+        // Загружаем корзину и избранное с сервера
+        await loadCartFromServer();
+        await loadFavoritesFromServer();
         
         const profileResponse = await axios.get('http://127.0.0.1:8000/api/profile/', {
           headers: { Authorization: `Bearer ${response.data.access}` }
         });
         
         localStorage.setItem('user', JSON.stringify(profileResponse.data));
+        console.log('✅ Профиль загружен:', profileResponse.data);
+        
         onLogin(profileResponse.data);
         onClose();
       } else {
+        console.log('🟢 Регистрация нового пользователя...');
+        
         if (formData.password !== formData.password_confirm) {
           setError('Пароли не совпадают');
           setLoading(false);
@@ -86,6 +117,8 @@ function AuthModal({ isOpen, onClose, onLogin }) {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         
+        console.log('✅ Регистрация успешна');
+        
         setIsLogin(true);
         setFormData({
           username: '', email: '', password: '', password_confirm: '',
@@ -95,6 +128,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
         setError('Регистрация прошла успешно! Теперь войдите.');
       }
     } catch (err) {
+      console.error('❌ Ошибка:', err);
       setError(err.response?.data?.detail || 'Произошла ошибка');
     } finally {
       setLoading(false);
@@ -150,7 +184,6 @@ function AuthModal({ isOpen, onClose, onLogin }) {
             </>
           ) : null}
           
-          {/* Поле пароля с кнопкой показать/скрыть */}
           <div className="password-field">
             <input 
               type={showPassword ? "text" : "password"} 
