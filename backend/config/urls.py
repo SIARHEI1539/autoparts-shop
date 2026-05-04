@@ -19,7 +19,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from users.views import RegisterView, UserProfileView
+from users.views import RegisterView, UserProfileView,  ChangePasswordView
 
 admin.site.site_header = "Магазин автозапчастей"
 admin.site.site_title = "Админка магазина автозапчастей"
@@ -33,6 +33,7 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/profile/', UserProfileView.as_view(), name='profile'),
+    path('api/change-password/', ChangePasswordView.as_view(), name='change-password'),
 ]
 
 # Добавляем URL для медиа-файлов (только в режиме разработки)

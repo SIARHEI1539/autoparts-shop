@@ -237,3 +237,61 @@
   height: 100%;
   object-fit: cover;
 }
+
+.form-section {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.row input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.password-field {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.password-field input {
+  width: 100%;
+  padding: 10px 40px 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  color: #999;
+}
+
+.toggle-password:hover {
+  color: #e74c3c;
+}

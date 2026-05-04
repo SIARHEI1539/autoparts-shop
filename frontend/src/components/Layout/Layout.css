@@ -4,11 +4,16 @@
   min-height: 100vh;
   margin: 0;
   padding: 0;
+  background: #f0f2f5;
+  overflow: visible; /* ← гарантируем, что ничего не обрезается */
 }
 
 .main-content {
   flex: 1;
   margin: 0;
   padding: 0;
-  background: #f5f5f5;
+  background: #f0f2f5;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
 }

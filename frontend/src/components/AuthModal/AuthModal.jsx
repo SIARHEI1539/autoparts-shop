@@ -4,6 +4,8 @@ import './AuthModal.css';
 
 function AuthModal({ isOpen, onClose, onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -11,6 +13,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
     password_confirm: '',
     first_name: '',
     last_name: '',
+    phone: '',
     city: '',
     street: '',
     house: '',
@@ -70,6 +73,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
         submitData.append('password_confirm', formData.password_confirm);
         submitData.append('first_name', formData.first_name);
         submitData.append('last_name', formData.last_name);
+        submitData.append('phone', formData.phone);
         submitData.append('city', formData.city);
         submitData.append('street', formData.street);
         submitData.append('house', formData.house);
@@ -85,7 +89,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
         setIsLogin(true);
         setFormData({
           username: '', email: '', password: '', password_confirm: '',
-          first_name: '', last_name: '', city: '', street: '', house: '', apartment: '', avatar: null
+          first_name: '', last_name: '', phone: '', city: '', street: '', house: '', apartment: '', avatar: null
         });
         setAvatarPreview(null);
         setError('Регистрация прошла успешно! Теперь войдите.');
@@ -96,6 +100,9 @@ function AuthModal({ isOpen, onClose, onLogin }) {
       setLoading(false);
     }
   };
+
+  const toggleShowPassword = () => setShowPassword(!showPassword);
+  const toggleShowConfirmPassword = () => setShowConfirmPassword(!showConfirmPassword);
 
   if (!isOpen) return null;
 
@@ -118,6 +125,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
                   <input type="text" name="first_name" placeholder="Имя" value={formData.first_name} onChange={handleChange} />
                   <input type="text" name="last_name" placeholder="Фамилия" value={formData.last_name} onChange={handleChange} />
                 </div>
+                <input type="tel" name="phone" placeholder="Телефон (+375XXXXXXXXX)" value={formData.phone} onChange={handleChange} />
               </div>
 
               <div className="form-section">
@@ -142,8 +150,36 @@ function AuthModal({ isOpen, onClose, onLogin }) {
             </>
           ) : null}
           
-          <input type="password" name="password" placeholder="Пароль" value={formData.password} onChange={handleChange} required />
-          {!isLogin && <input type="password" name="password_confirm" placeholder="Подтвердите пароль" value={formData.password_confirm} onChange={handleChange} required />}
+          {/* Поле пароля с кнопкой показать/скрыть */}
+          <div className="password-field">
+            <input 
+              type={showPassword ? "text" : "password"} 
+              name="password" 
+              placeholder="Пароль" 
+              value={formData.password} 
+              onChange={handleChange} 
+              required 
+            />
+            <button type="button" className="toggle-password" onClick={toggleShowPassword}>
+              {showPassword ? '🙈' : '👁️'}
+            </button>
+          </div>
+          
+          {!isLogin && (
+            <div className="password-field">
+              <input 
+                type={showConfirmPassword ? "text" : "password"} 
+                name="password_confirm" 
+                placeholder="Подтвердите пароль" 
+                value={formData.password_confirm} 
+                onChange={handleChange} 
+                required 
+              />
+              <button type="button" className="toggle-password" onClick={toggleShowConfirmPassword}>
+                {showConfirmPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
+          )}
           
           <button type="submit" disabled={loading}>{loading ? 'Загрузка...' : (isLogin ? 'Войти' : 'Зарегистрироваться')}</button>
         </form>

@@ -12,15 +12,16 @@ html, body, #root {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  min-height: 100vh;
+  height: 100%;
 }
 
 body {
-  background-color: #f5f5f5;
-  line-height: 1.2;
+  background: #f0f2f5;
+  color: #2c3e50;
 }
 
-/* Убираем любые возможные отступы у всех элементов */
-h1, h2, h3, h4, p, ul, ol, li, div, section, article, header, footer, nav, main {
-  margin: 0;
-  padding: 0;
+#root {
+  display: flex;
+  flex-direction: column;
 }

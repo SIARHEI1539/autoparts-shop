@@ -21,6 +21,14 @@ function Header() {
       setUser(JSON.parse(savedUser));
     }
     updateFavoritesCount();
+    
+    window.addEventListener('storage', updateFavoritesCount);
+    window.addEventListener('favoritesUpdated', updateFavoritesCount);
+    
+    return () => {
+      window.removeEventListener('storage', updateFavoritesCount);
+      window.removeEventListener('favoritesUpdated', updateFavoritesCount);
+    };
   }, []);
 
   const updateFavoritesCount = () => {
@@ -42,9 +50,9 @@ function Header() {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
     setUser(null);
+    updateFavoritesCount();
   };
 
-  // Проверка авторизации перед переходом
   const handleProtectedClick = (e, path) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -85,8 +93,8 @@ function Header() {
                   onClick={(e) => handleProtectedClick(e, '/favorites')}
                 >
                   Избранное
-                  {favoritesCount > 0 && <span className="favorites-count">{favoritesCount}</span>}
                 </button>
+                {favoritesCount > 0 && <span className="favorites-count">{favoritesCount}</span>}
               </li>
               <li className="cart-item">
                 <button 
@@ -94,8 +102,8 @@ function Header() {
                   onClick={(e) => handleProtectedClick(e, '/cart')}
                 >
                   Корзина
-                  {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
                 </button>
+                {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
               </li>
               {user ? (
                 <>

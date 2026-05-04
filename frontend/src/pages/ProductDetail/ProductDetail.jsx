@@ -1,3 +1,5 @@
+// frontend/src/pages/ProductDetail/ProductDetail.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -19,6 +21,11 @@ function ProductDetail() {
   
   const reviewsTabRef = useRef(null);
   const reviewsFormRef = useRef(null);
+
+  // Функция для обновления счётчика избранного в хедере
+  const dispatchFavoritesUpdate = () => {
+    window.dispatchEvent(new Event('favoritesUpdated'));
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -43,7 +50,6 @@ function ProductDetail() {
     navigate(-1);
   };
 
-  // Проверка авторизации для избранного
   const toggleFavorite = () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -63,9 +69,11 @@ function ProductDetail() {
       localStorage.setItem('favorites', JSON.stringify(favorites));
       setIsFavorite(true);
     }
+    
+    // Обновляем счётчик в хедере
+    dispatchFavoritesUpdate();
   };
 
-  // Проверка авторизации для корзины
   const handleAddToCart = () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -88,9 +96,9 @@ function ProductDetail() {
   };
 
   const handleLoginSuccess = (userData) => {
-    // Обновляем состояние избранного после входа
     const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
     setIsFavorite(favorites.includes(Number(id)));
+    dispatchFavoritesUpdate();
   };
 
   if (loading) {
