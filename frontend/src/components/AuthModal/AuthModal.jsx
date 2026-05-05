@@ -86,6 +86,9 @@ function AuthModal({ isOpen, onClose, onLogin }) {
         localStorage.setItem('user', JSON.stringify(profileResponse.data));
         console.log('✅ Профиль загружен:', profileResponse.data);
         
+        // Принудительно обновляем счётчик в хедере
+        window.dispatchEvent(new Event('favoritesUpdated'));
+        
         onLogin(profileResponse.data);
         onClose();
       } else {

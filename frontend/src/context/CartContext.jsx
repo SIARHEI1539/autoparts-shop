@@ -262,31 +262,33 @@ export function CartProvider({ children }) {
     console.log('❤️ toggleFavorite в контексте, productId:', productId);
     const token = getToken();
     console.log('🔑 Токен:', !!token);
-    
+  
     if (!token) return false;
 
-    try {
-      const response = await axios.post('http://127.0.0.1:8000/api/favorites/', {
-        part_id: productId
+      try {
+        const response = await axios.post('http://127.0.0.1:8000/api/favorites/', {
+          part_id: productId
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
+    
       console.log('📡 Ответ сервера:', response.status);
-      
-      if (response.status === 201) {
-        console.log('✅ Товар добавлен в избранное на сервере');
-      } else if (response.status === 204) {
-        console.log('🗑️ Товар удалён из избранного на сервере');
-      }
-      
-      await loadFavoritesFromServer();
-      return true;
-    } catch (error) {
-      console.error('❌ Ошибка изменения избранного:', error.response?.data || error);
-      return false;
-    }
-  };
+    
+    // Обновляем localStorage после успешного запроса
+    await loadFavoritesFromServer();
+    
+    // Принудительно обновляем счётчик
+    const updatedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    console.log('❤️ Обновлённый список избранного:', updatedFavorites);
+    
+    window.dispatchEvent(new Event('favoritesUpdated'));
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Ошибка изменения избранного:', error.response?.data || error);
+    return false;
+  }
+};
 
   const getFavoritesCount = () => {
     const token = getToken();

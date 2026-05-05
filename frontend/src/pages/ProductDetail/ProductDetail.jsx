@@ -15,48 +15,46 @@ function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const { addToCart, toggleFavorite, loadFavoritesFromServer } = useCart();
+  const { addToCart, loadFavoritesFromServer } = useCart();
   
   const reviewsTabRef = useRef(null);
   const reviewsFormRef = useRef(null);
 
-  // Обновление состояния избранного
+  console.log('🔍 ProductDetail загружен, id из URL:', id);
+
   const updateFavoriteStatus = () => {
-    const token = localStorage.getItem('access_token');
-    let favorites = [];
-    
-    if (token) {
-      favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    } else {
-      favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    }
-    
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
     const isFav = favorites.includes(Number(id));
     setIsFavorite(isFav);
-    console.log('❤️ Статус избранного обновлён, товар', id, ':', isFav);
+    console.log('❤️ Статус товара', id, 'в избранном:', isFav);
   };
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        console.log('🔄 Загрузка товара ID:', id);
+        console.log('🔄 Загрузка товара с сервера, ID:', id);
         const response = await axios.get(`http://127.0.0.1:8000/api/parts/${id}/`);
+        console.log('✅ Товар получен:', response.data);
         setProduct(response.data);
-        console.log('✅ Товар загружен:', response.data.name);
-        
         updateFavoriteStatus();
       } catch (error) {
         console.error('❌ Ошибка загрузки товара:', error);
+        console.error('❌ Статус ошибки:', error.response?.status);
+        console.error('❌ Данные ошибки:', error.response?.data);
         setProduct(null);
       } finally {
         setLoading(false);
       }
     };
     
-    fetchProduct();
+    if (id) {
+      fetchProduct();
+    } else {
+      console.error('❌ ID товара не передан в URL');
+      setLoading(false);
+    }
     
-    // Слушаем обновления избранного
     const handleFavoritesUpdate = () => {
       console.log('❤️ Событие favoritesUpdated получено');
       updateFavoriteStatus();
@@ -78,45 +76,49 @@ function ProductDetail() {
     console.log('❤️ Кнопка избранного нажата, токен:', !!token, 'productId:', id);
     
     if (!token) {
-      console.log('🔴 Нет токена, открываем окно входа');
       setIsAuthModalOpen(true);
       return;
     }
     
-    // Оптимистичное обновление UI
-    const newFavoriteState = !isFavorite;
-    setIsFavorite(newFavoriteState);
-    console.log('❤️ Оптимистичное обновление UI:', newFavoriteState);
+    const currentFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const wasFavorite = currentFavorites.includes(Number(id));
+    
+    setIsFavorite(!wasFavorite);
     
     try {
-      const result = await toggleFavorite(Number(id));
-      console.log('✅ Запрос к серверу выполнен, результат:', result);
+      await axios.post('http://127.0.0.1:8000/api/favorites/', {
+        part_id: Number(id)
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       
-      // Обновляем из localStorage
-      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-      const updatedIsFavorite = favorites.includes(Number(id));
-      setIsFavorite(updatedIsFavorite);
+      console.log('✅ Запрос к серверу выполнен');
       
-      // Отправляем событие для обновления счётчика в хедере
+      const response = await axios.get('http://127.0.0.1:8000/api/favorites/', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const favoriteIds = response.data.map(f => f.part.id);
+      localStorage.setItem('favorites', JSON.stringify(favoriteIds));
+      
+      const newIsFavorite = favoriteIds.includes(Number(id));
+      setIsFavorite(newIsFavorite);
+      
+      console.log('❤️ Обновлённый список избранного:', favoriteIds);
+      
       window.dispatchEvent(new Event('favoritesUpdated'));
-      
-      console.log('❤️ Финальный статус избранного:', updatedIsFavorite);
     } catch (error) {
       console.error('❌ Ошибка при изменении избранного:', error);
-      // Откатываем оптимистичное обновление при ошибке
-      setIsFavorite(!newFavoriteState);
+      setIsFavorite(wasFavorite);
     }
   };
 
   const handleAddToCart = () => {
     const token = localStorage.getItem('access_token');
-    console.log('🛒 addToCart вызван, токен:', !!token);
-    
     if (!token) {
       setIsAuthModalOpen(true);
       return;
     }
-    
     addToCart(product, quantity);
     alert(`✅ ${product.name} добавлен в корзину!`);
   };
@@ -135,18 +137,28 @@ function ProductDetail() {
   const handleLoginSuccess = async (userData) => {
     console.log('🟢 Вход выполнен, обновляем данные...');
     await loadFavoritesFromServer();
-    setTimeout(() => {
-      updateFavoriteStatus();
-      window.dispatchEvent(new Event('favoritesUpdated'));
-    }, 500);
+    updateFavoriteStatus();
+    window.dispatchEvent(new Event('favoritesUpdated'));
   };
 
   if (loading) {
-    return <div className="loading">Загрузка...</div>;
+    return (
+      <div className="product-detail-container">
+        <div className="loading">Загрузка товара...</div>
+      </div>
+    );
   }
 
   if (!product) {
-    return <div className="error">Товар не найден</div>;
+    return (
+      <div className="product-detail-container">
+        <div className="error">
+          <h2>Товар не найден</h2>
+          <p>Возможно, товар был удалён или ссылка неверна.</p>
+          <button onClick={goBack} className="back-btn">Вернуться назад</button>
+        </div>
+      </div>
+    );
   }
 
   const specs = {

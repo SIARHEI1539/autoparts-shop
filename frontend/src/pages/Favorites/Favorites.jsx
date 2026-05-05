@@ -1,44 +1,79 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { useCart } from '../../context/CartContext';
 import './Favorites.css';
 
 function Favorites() {
   const [favoriteProducts, setFavoriteProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { loadFavoritesFromServer } = useCart();
+
+  const loadFavorites = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('access_token');
+      
+      if (!token) {
+        setFavoriteProducts([]);
+        setLoading(false);
+        return;
+      }
+      
+      // Загружаем избранное с сервера
+      const response = await axios.get('http://127.0.0.1:8000/api/favorites/', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const favoriteIds = response.data.map(f => f.part.id);
+      localStorage.setItem('favorites', JSON.stringify(favoriteIds));
+      
+      if (favoriteIds.length === 0) {
+        setFavoriteProducts([]);
+        setLoading(false);
+        return;
+      }
+
+      const promises = favoriteIds.map(id => 
+        axios.get(`http://127.0.0.1:8000/api/parts/${id}/`)
+      );
+      const responses = await Promise.all(promises);
+      setFavoriteProducts(responses.map(res => res.data));
+    } catch (error) {
+      console.error('Ошибка загрузки избранного:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadFavorites = async () => {
-      try {
-        const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-        
-        if (favorites.length === 0) {
-          setFavoriteProducts([]);
-          setLoading(false);
-          return;
-        }
-
-        // Загружаем данные по каждому ID из избранного
-        const promises = favorites.map(id => 
-          axios.get(`http://127.0.0.1:8000/api/parts/${id}/`)
-        );
-        const responses = await Promise.all(promises);
-        setFavoriteProducts(responses.map(res => res.data));
-      } catch (error) {
-        console.error('Ошибка загрузки избранного:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     loadFavorites();
   }, []);
 
-  const removeFromFavorites = (productId) => {
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    const newFavorites = favorites.filter(id => id !== productId);
-    localStorage.setItem('favorites', JSON.stringify(newFavorites));
-    setFavoriteProducts(favoriteProducts.filter(p => p.id !== productId));
+  const removeFromFavorites = async (productId) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+      
+      await axios.post('http://127.0.0.1:8000/api/favorites/', {
+        part_id: productId
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Обновляем локально без перезагрузки
+      const updatedFavorites = favoriteProducts.filter(p => p.id !== productId);
+      setFavoriteProducts(updatedFavorites);
+      
+      // Обновляем localStorage
+      const newFavoriteIds = updatedFavorites.map(p => p.id);
+      localStorage.setItem('favorites', JSON.stringify(newFavoriteIds));
+      
+      // Отправляем событие для обновления счётчика в хедере
+      window.dispatchEvent(new Event('favoritesUpdated'));
+    } catch (error) {
+      console.error('Ошибка удаления из избранного:', error);
+    }
   };
 
   if (loading) {
