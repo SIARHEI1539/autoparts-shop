@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 class Part(models.Model):
     """
@@ -61,14 +62,14 @@ class Part(models.Model):
         verbose_name='Описание'
     )
     
-    # Совместимость с автомобилями (например, "Toyota Camry 2015-2020")
+    # Совместимость с автомобилями
     compatibility = models.CharField(
         max_length=200,
         blank=True,
         verbose_name='Совместимость'
     )
 
-     # НОВОЕ ПОЛЕ ДЛЯ ФОТО
+    # Фото запчасти
     image = models.ImageField(
         upload_to='parts/',
         blank=True,
@@ -94,4 +95,43 @@ class Part(models.Model):
     class Meta:
         verbose_name = 'Запчасть'
         verbose_name_plural = 'Запчасти'
-        ordering = ['-created_at']  # Сначала новые
+        ordering = ['-created_at']
+
+
+class Review(models.Model):
+    part = models.ForeignKey(Part, on_delete=models.CASCADE, related_name='reviews')
+    author = models.CharField(max_length=100, default='Аноним')
+    rating = models.IntegerField(choices=[(i, i) for i in range(1, 6)])
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.author} - {self.rating}★ - {self.part.name}'
+
+    class Meta:
+        ordering = ['-created_at']
+
+
+class Cart(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='cart_items')
+    part = models.ForeignKey(Part, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['user', 'part']
+
+    def __str__(self):
+        return f'{self.user.username} - {self.part.name} x{self.quantity}'
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='favorites')
+    part = models.ForeignKey(Part, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['user', 'part']
+
+    def __str__(self):
+        return f'{self.user.username} - {self.part.name}'
