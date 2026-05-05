@@ -1,0 +1,137 @@
+.reviews {
+  padding: 20px 0;
+}
+
+.reviews-list h3 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: #2c3e50;
+}
+
+.no-reviews {
+  color: #7f8c8d;
+  text-align: center;
+  padding: 20px;
+}
+
+.review-item {
+  border-bottom: 1px solid #eee;
+  padding: 16px 0;
+}
+
+.review-header {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  flex-wrap: wrap;
+}
+
+.review-author {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.review-rating {
+  color: #f39c12;
+}
+
+.review-date {
+  color: #999;
+  font-size: 12px;
+}
+
+.review-text {
+  color: #555;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Форма */
+.review-form {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #eee;
+}
+
+.review-form h4 {
+  font-size: 16px;
+  margin-bottom: 16px;
+  color: #2c3e50;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.review-form button {
+  background: #2c3e50;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.review-form button:hover {
+  background: #e74c3c;
+}
+
+.review-form button:disabled {
+  background: #95a5a6;
+  cursor: not-allowed;
+}
+
+.reviews-loading {
+  text-align: center;
+  padding: 40px;
+  color: #7f8c8d;
+}
+
+.login-to-review {
+  text-align: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin: 10px 0;
+}
+
+.login-to-review p {
+  margin-bottom: 12px;
+  color: #666;
+  font-size: 14px;
+}
+
+.login-to-review-btn {
+  background: #2c3e50;
+  color: white;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.login-to-review-btn:hover {
+  background: #e74c3c;
+}

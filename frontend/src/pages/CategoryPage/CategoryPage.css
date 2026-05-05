@@ -1,5 +1,5 @@
 .category-page {
-  padding: 40px 24px;
+  padding: 30px 24px;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -19,11 +19,12 @@
   color: #7f8c8d;
 }
 
-/* Сетка товаров */
+/* СЕТКА ТОВАРОВ — ГЛАВНОЕ! */
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
+  width: 100%;
 }
 
 /* Карточка товара */
@@ -36,7 +37,7 @@
 }
 
 .product-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(0,0,0,0.12);
 }
 
@@ -46,10 +47,9 @@
   padding: 16px 16px 12px;
 }
 
-/* Фото */
 .product-image {
   width: 100%;
-  height: 180px;
+  height: 160px;
   background: #f8f9fa;
   display: flex;
   align-items: center;
@@ -75,43 +75,38 @@
   color: #ccc;
 }
 
-/* Название */
 .product-title {
-  font-size: 1rem;
+  font-size: 14px;
   font-weight: 600;
   color: #2c3e50;
   margin-bottom: 8px;
   line-height: 1.4;
-  height: 2.8rem;
+  height: 40px;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
-/* Цена */
 .product-price {
-  font-size: 1.3rem;
+  font-size: 18px;
   font-weight: 700;
   color: #e74c3c;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
-/* Кнопка корзины */
 .add-to-cart {
-  width: 100%;
-  padding: 12px;
+  width: calc(100% - 32px);
+  margin: 0 16px 16px;
+  padding: 10px;
   background: #2c3e50;
   color: white;
   border: none;
-  font-size: 0.9rem;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.3s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
 }
 
 .add-to-cart:hover {
@@ -123,4 +118,17 @@
   padding: 50px;
   font-size: 1.2rem;
   color: #7f8c8d;
+}
+
+/* Адаптивность */
+@media (max-width: 1000px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .products-grid {
+    grid-template-columns: 1fr;
+  }
 }
