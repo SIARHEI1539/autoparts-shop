@@ -20,9 +20,12 @@ backend/media/
 
 # Generated data (JSON файлы от парсера/генератора)
 scripts/*.json
+backend/*.json
 *.json
 !package.json
 !package-lock.json
+!frontend/package.json
+!frontend/package-lock.json
 
 # OS files
 .DS_Store
