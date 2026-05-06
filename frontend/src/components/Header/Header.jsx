@@ -16,6 +16,12 @@ function Header() {
   const { getTotalCount, clearCart, loadCartFromServer, loadFavoritesFromServer } = useCart();
   const cartCount = getTotalCount();
 
+  const updateFavoritesCount = () => {
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    setFavoritesCount(favorites.length);
+    console.log('❤️ Счётчик избранного обновлён:', favorites.length);
+  };
+
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     const token = localStorage.getItem('access_token');
@@ -26,14 +32,24 @@ function Header() {
       loadFavoritesFromServer();
     }
     updateFavoritesCount();
+    
+    // ✅ Слушаем событие обновления избранного
+    const handleFavoritesUpdate = () => {
+      console.log('❤️ Событие favoritesUpdated в Header');
+      updateFavoritesCount();
+    };
+    
+    window.addEventListener('favoritesUpdated', handleFavoritesUpdate);
+    window.addEventListener('storage', updateFavoritesCount);
+    
+    return () => {
+      window.removeEventListener('favoritesUpdated', handleFavoritesUpdate);
+      window.removeEventListener('storage', updateFavoritesCount);
+    };
   }, []);
 
-  const updateFavoritesCount = () => {
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    setFavoritesCount(favorites.length);
-  };
-
   const handleLogin = async (userData) => {
+    console.log('🟢 Вход выполнен');
     setUser(userData);
     await loadCartFromServer();
     await loadFavoritesFromServer();
@@ -45,6 +61,7 @@ function Header() {
   };
 
   const handleLogout = () => {
+    console.log('🔴 Выход из аккаунта');
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
@@ -77,7 +94,6 @@ function Header() {
             </Link>
           </div>
 
-          {/* Форма поиска */}
           <form className="search-form" onSubmit={handleSearch}>
             <input
               type="text"
