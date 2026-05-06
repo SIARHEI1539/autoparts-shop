@@ -1,26 +1,38 @@
-from rest_framework import viewsets, status
-from rest_framework.filters import SearchFilter
+from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q
 from .models import Part, Review, Cart, Favorite
 from .serializers import PartSerializer, ReviewSerializer, CartSerializer, FavoriteSerializer
-
 
 class PartViewSet(viewsets.ModelViewSet):
     queryset = Part.objects.all()
     serializer_class = PartSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['category']
-    search_fields = ['name', 'manufacturer', 'sku']
+    ordering_fields = ['name', 'price', 'created_at']
+    ordering = ['-created_at']
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search = self.request.query_params.get('search', None)
+        
+        if search:
+            # Регистронезависимый поиск
+            queryset = queryset.filter(
+                Q(name__icontains=search) |
+                Q(manufacturer__icontains=search) |
+                Q(sku__icontains=search)
+            )
+        
+        return queryset
 
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['part']
-
 
 class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
@@ -49,7 +61,6 @@ class CartViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
-
 
 class FavoriteViewSet(viewsets.ModelViewSet):
     serializer_class = FavoriteSerializer

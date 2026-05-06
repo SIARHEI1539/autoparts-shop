@@ -9,6 +9,7 @@ import CategoryPage from '../pages/CategoryPage/CategoryPage';
 import ProductDetail from '../pages/ProductDetail/ProductDetail';
 import Favorites from '../pages/Favorites/Favorites';
 import Cart from '../pages/Cart/Cart';
+import SearchPage from '../pages/SearchPage/SearchPage';
 import './App.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/category/:id" element={<CategoryPage />} />
             <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/search" element={<SearchPage />} />
             {/* Защищённые маршруты */}
             <Route path="/favorites" element={
               <ProtectedRoute>
