@@ -135,3 +135,45 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.part.name}'
+    
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ('new', 'Новый'),
+        ('processing', 'В обработке'),
+        ('paid', 'Оплачен'),
+        ('shipped', 'Отправлен'),
+        ('delivered', 'Доставлен'),
+        ('cancelled', 'Отменён'),
+    ]
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    
+    # Данные получателя (копируются из профиля в момент заказа)
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    city = models.CharField(max_length=100)
+    street = models.CharField(max_length=200)
+    house = models.CharField(max_length=20)
+    apartment = models.CharField(max_length=20, blank=True)
+    
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f'Заказ #{self.id} - {self.user.username}'
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    part = models.ForeignKey(Part, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2)  # цена на момент заказа
+    
+    def __str__(self):
+        return f'{self.part.name} x{self.quantity}'

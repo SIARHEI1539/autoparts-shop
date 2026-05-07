@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
-from .models import Part, Review, Cart, Favorite
-from .serializers import PartSerializer, ReviewSerializer, CartSerializer, FavoriteSerializer
+from .models import Part, Review, Cart, Favorite, Order, OrderItem
+from .serializers import PartSerializer, ReviewSerializer, CartSerializer, FavoriteSerializer, OrderSerializer
 
 class PartViewSet(viewsets.ModelViewSet):
     queryset = Part.objects.all()
@@ -87,3 +87,55 @@ class FavoriteViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+class OrderViewSet(viewsets.ModelViewSet):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        cart_items = Cart.objects.filter(user=user)
+
+        if not cart_items.exists():
+            return Response({'error': 'Корзина пуста'}, status=status.HTTP_400_BAD_REQUEST)
+
+        data = request.data
+        total = 0
+
+        order = Order.objects.create(
+            user=user,
+            first_name=data.get('first_name', user.first_name),
+            last_name=data.get('last_name', user.last_name),
+            email=data.get('email', user.email),
+            phone=data.get('phone', ''),
+            city=data.get('city', ''),
+            street=data.get('street', ''),
+            house=data.get('house', ''),
+            apartment=data.get('apartment', ''),
+            total_price=0
+        )
+
+        for cart_item in cart_items:
+            part = cart_item.part
+            price = float(part.price)
+            total += price * cart_item.quantity
+
+            OrderItem.objects.create(
+                order=order,
+                part=part,
+                quantity=cart_item.quantity,
+                price=price
+            )
+
+        order.total_price = total
+        order.save()
+
+        # Очищаем корзину
+        cart_items.delete()
+
+        serializer = self.get_serializer(order)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
