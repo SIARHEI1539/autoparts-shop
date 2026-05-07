@@ -81,7 +81,7 @@ function Cart() {
               <span>Сумма:</span>
               <span>{totalPrice.toFixed(2)} BYN</span>
             </div>
-            <button className="checkout-btn">Оформить заказ</button>
+            <Link to="/checkout" className="checkout-btn">Оформить заказ</Link>
           </div>
         </div>
       </div>
