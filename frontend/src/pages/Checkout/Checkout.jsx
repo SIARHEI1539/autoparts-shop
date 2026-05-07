@@ -7,7 +7,18 @@ import './Checkout.css';
 function Checkout() {
   const navigate = useNavigate();
   const { cartItems, getTotalPrice, clearCart } = useCart();
+  const [isForAnother, setIsForAnother] = useState(false);
   const [userData, setUserData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    city: '',
+    street: '',
+    house: '',
+    apartment: ''
+  });
+  const [recipientData, setRecipientData] = useState({
     first_name: '',
     last_name: '',
     email: '',
@@ -20,35 +31,35 @@ function Checkout() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Обработчики для добавления префиксов при потере фокуса
-  const handleCityBlur = (e) => {
-    let value = e.target.value;
-    if (value && !value.startsWith('г. ')) {
-      setUserData({ ...userData, city: `г. ${value}` });
+  // Функции для добавления префиксов
+  const addPrefix = (value, prefix) => {
+    if (value && !value.startsWith(prefix)) {
+      return `${prefix} ${value}`;
     }
+    return value;
   };
 
-  const handleStreetBlur = (e) => {
-    let value = e.target.value;
-    if (value && !value.startsWith('ул. ')) {
-      setUserData({ ...userData, street: `ул. ${value}` });
-    }
+  const handleCityBlur = (setter, data) => (e) => {
+    const value = addPrefix(e.target.value, 'г.');
+    setter({ ...data, city: value });
   };
 
-  const handleHouseBlur = (e) => {
-    let value = e.target.value;
-    if (value && !value.startsWith('д. ')) {
-      setUserData({ ...userData, house: `д. ${value}` });
-    }
+  const handleStreetBlur = (setter, data) => (e) => {
+    const value = addPrefix(e.target.value, 'ул.');
+    setter({ ...data, street: value });
   };
 
-  const handleApartmentBlur = (e) => {
-    let value = e.target.value;
-    if (value && !value.startsWith('кв. ')) {
-      setUserData({ ...userData, apartment: `кв. ${value}` });
-    }
+  const handleHouseBlur = (setter, data) => (e) => {
+    const value = addPrefix(e.target.value, 'д.');
+    setter({ ...data, house: value });
   };
 
+  const handleApartmentBlur = (setter, data) => (e) => {
+    const value = addPrefix(e.target.value, 'кв.');
+    setter({ ...data, apartment: value });
+  };
+
+  // Загрузка профиля
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
@@ -56,7 +67,7 @@ function Checkout() {
         headers: { Authorization: `Bearer ${token}` }
       }).then(response => {
         const profile = response.data;
-        setUserData({
+        const userInfo = {
           first_name: profile.first_name || '',
           last_name: profile.last_name || '',
           email: profile.email || '',
@@ -65,13 +76,39 @@ function Checkout() {
           street: profile.profile?.street || '',
           house: profile.profile?.house || '',
           apartment: profile.profile?.apartment || ''
-        });
+        };
+        setUserData(userInfo);
+        // recipientData НЕ заполняем данными пользователя, оставляем пустым
       }).catch(console.error);
     }
   }, []);
 
-  const handleChange = (e) => {
+  const handleUserChange = (e) => {
     setUserData({ ...userData, [e.target.name]: e.target.value });
+  };
+
+  const handleRecipientChange = (e) => {
+    setRecipientData({ ...recipientData, [e.target.name]: e.target.value });
+  };
+
+  // Обработчик переключения чекбокса
+  const handleCheckboxChange = (e) => {
+    const isChecked = e.target.checked;
+    setIsForAnother(isChecked);
+    
+    // При переключении НА другого человека - очищаем recipientData
+    if (isChecked) {
+      setRecipientData({
+        first_name: '',
+        last_name: '',
+        email: '',
+        phone: '',
+        city: '',
+        street: '',
+        house: '',
+        apartment: ''
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -86,11 +123,20 @@ function Checkout() {
       return;
     }
 
+    const orderData = isForAnother ? recipientData : userData;
+
+    // Валидация: проверяем что поля не пустые
+    if (!orderData.first_name || !orderData.last_name || !orderData.email || !orderData.phone || 
+        !orderData.city || !orderData.street || !orderData.house) {
+      setError('Пожалуйста, заполните все обязательные поля');
+      setLoading(false);
+      return;
+    }
+
     try {
-      await axios.post('http://127.0.0.1:8000/api/orders/', userData, {
+      await axios.post('http://127.0.0.1:8000/api/orders/', orderData, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
       clearCart();
       alert('Заказ успешно оформлен!');
       navigate('/');
@@ -111,52 +157,103 @@ function Checkout() {
     );
   }
 
+  // Текущие данные для отображения
+  const currentData = isForAnother ? recipientData : userData;
+  const handleChange = isForAnother ? handleRecipientChange : handleUserChange;
+  const cityBlur = isForAnother ? handleCityBlur(setRecipientData, recipientData) : handleCityBlur(setUserData, userData);
+  const streetBlur = isForAnother ? handleStreetBlur(setRecipientData, recipientData) : handleStreetBlur(setUserData, userData);
+  const houseBlur = isForAnother ? handleHouseBlur(setRecipientData, recipientData) : handleHouseBlur(setUserData, userData);
+  const apartmentBlur = isForAnother ? handleApartmentBlur(setRecipientData, recipientData) : handleApartmentBlur(setUserData, userData);
+
   return (
     <div className="checkout">
       <h1>Оформление заказа</h1>
       <div className="checkout-grid">
         <div className="checkout-form">
           <form onSubmit={handleSubmit}>
-            <div className="form-row">
-              <input name="first_name" placeholder="Имя" value={userData.first_name} onChange={handleChange} required />
-              <input name="last_name" placeholder="Фамилия" value={userData.last_name} onChange={handleChange} required />
+            <div className="another-person-checkbox">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={isForAnother}
+                  onChange={handleCheckboxChange}
+                />
+                Оформить заказ на другого человека
+              </label>
             </div>
-            <input name="email" type="email" placeholder="Email" value={userData.email} onChange={handleChange} required />
-            <input name="phone" placeholder="Телефон" value={userData.phone} onChange={handleChange} required />
+
+            <h3>{isForAnother ? 'Данные получателя' : 'Ваши данные'}</h3>
+            
+            <div className="form-row">
+              <input 
+                name="first_name" 
+                placeholder={isForAnother ? "Имя получателя" : "Имя"} 
+                value={currentData.first_name} 
+                onChange={handleChange} 
+                required 
+              />
+              <input 
+                name="last_name" 
+                placeholder={isForAnother ? "Фамилия получателя" : "Фамилия"} 
+                value={currentData.last_name} 
+                onChange={handleChange} 
+                required 
+              />
+            </div>
+            
+            <input 
+              name="email" 
+              type="email" 
+              placeholder={isForAnother ? "Email получателя" : "Email"} 
+              value={currentData.email} 
+              onChange={handleChange} 
+              required 
+            />
+            
+            <input 
+              name="phone" 
+              placeholder={isForAnother ? "Телефон получателя" : "Телефон"} 
+              value={currentData.phone} 
+              onChange={handleChange} 
+              required 
+            />
             
             <input 
               name="city" 
-              placeholder="Город" 
-              value={userData.city} 
+              placeholder={isForAnother ? "Город получателя" : "Город"} 
+              value={currentData.city} 
               onChange={handleChange} 
-              onBlur={handleCityBlur}
+              onBlur={cityBlur} 
               required 
             />
+            
             <input 
               name="street" 
-              placeholder="Улица" 
-              value={userData.street} 
+              placeholder={isForAnother ? "Улица получателя" : "Улица"} 
+              value={currentData.street} 
               onChange={handleChange} 
-              onBlur={handleStreetBlur}
+              onBlur={streetBlur} 
               required 
             />
+            
             <div className="form-row">
               <input 
                 name="house" 
-                placeholder="Дом" 
-                value={userData.house} 
+                placeholder={isForAnother ? "Дом получателя" : "Дом"} 
+                value={currentData.house} 
                 onChange={handleChange} 
-                onBlur={handleHouseBlur}
+                onBlur={houseBlur} 
                 required 
               />
               <input 
                 name="apartment" 
-                placeholder="Квартира" 
-                value={userData.apartment} 
+                placeholder={isForAnother ? "Квартира получателя" : "Квартира"} 
+                value={currentData.apartment} 
                 onChange={handleChange} 
-                onBlur={handleApartmentBlur}
+                onBlur={apartmentBlur} 
               />
             </div>
+            
             {error && <div className="error">{error}</div>}
             <button type="submit" disabled={loading}>{loading ? 'Оформление...' : 'Подтвердить заказ'}</button>
           </form>
