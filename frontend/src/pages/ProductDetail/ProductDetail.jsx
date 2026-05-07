@@ -83,6 +83,7 @@ function ProductDetail() {
     const currentFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
     const wasFavorite = currentFavorites.includes(Number(id));
     
+    // Оптимистичное обновление UI
     setIsFavorite(!wasFavorite);
     
     try {
@@ -106,7 +107,9 @@ function ProductDetail() {
       
       console.log('❤️ Обновлённый список избранного:', favoriteIds);
       
+      // ✅ ОБНОВЛЯЕМ СЧЁТЧИК В ХЕДЕРЕ
       window.dispatchEvent(new Event('favoritesUpdated'));
+      
     } catch (error) {
       console.error('❌ Ошибка при изменении избранного:', error);
       setIsFavorite(wasFavorite);
