@@ -11,34 +11,29 @@ function Header() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [favoritesCount, setFavoritesCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { getTotalCount, clearCart, loadCartFromServer, loadFavoritesFromServer } = useCart();
   const cartCount = getTotalCount();
 
   const updateFavoritesCount = () => {
     const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    const count = favorites.length;
-    console.log('❤️ Счётчик избранного обновлён:', count);
-    setFavoritesCount(count);
+    setFavoritesCount(favorites.length);
+    console.log('❤️ Счётчик избранного обновлён:', favorites.length);
   };
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     const token = localStorage.getItem('access_token');
     
-    console.log('🔍 Header загружен, токен:', !!token);
-    
     if (savedUser && token) {
       setUser(JSON.parse(savedUser));
       loadCartFromServer();
-      loadFavoritesFromServer().then(() => {
-        updateFavoritesCount();
-      });
-    } else {
-      updateFavoritesCount();
+      loadFavoritesFromServer();
     }
+    updateFavoritesCount();
     
-    // Слушаем обновления избранного
+    // ✅ Слушаем событие обновления избранного
     const handleFavoritesUpdate = () => {
       console.log('❤️ Событие favoritesUpdated в Header');
       updateFavoritesCount();
@@ -67,28 +62,21 @@ function Header() {
 
   const handleLogout = () => {
     console.log('🔴 Выход из аккаунта');
-    
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
-    
     clearCart();
     localStorage.removeItem('favorites');
-    
     setUser(null);
     setFavoritesCount(0);
-    
-    window.dispatchEvent(new Event('favoritesUpdated'));
     navigate('/');
   };
 
-  const handleProtectedClick = (e, path) => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      e.preventDefault();
-      setIsAuthModalOpen(true);
-    } else {
-      navigate(path);
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
     }
   };
 
@@ -106,6 +94,16 @@ function Header() {
             </Link>
           </div>
 
+          <form className="search-form" onSubmit={handleSearch}>
+            <input
+              type="text"
+              placeholder="Поиск запчастей..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button type="submit">🔍</button>
+          </form>
+
           <button className="burger-menu" onClick={toggleMenu}>
             <span className={`burger-line ${menuOpen ? 'open' : ''}`}></span>
             <span className={`burger-line ${menuOpen ? 'open' : ''}`}></span>
@@ -119,7 +117,15 @@ function Header() {
               <li className="favorites-item">
                 <button 
                   className="nav-link favorites-btn"
-                  onClick={(e) => handleProtectedClick(e, '/favorites')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const token = localStorage.getItem('access_token');
+                    if (!token) {
+                      setIsAuthModalOpen(true);
+                    } else {
+                      navigate('/favorites');
+                    }
+                  }}
                 >
                   Избранное
                 </button>
@@ -128,7 +134,15 @@ function Header() {
               <li className="cart-item">
                 <button 
                   className="nav-link cart-link"
-                  onClick={(e) => handleProtectedClick(e, '/cart')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const token = localStorage.getItem('access_token');
+                    if (!token) {
+                      setIsAuthModalOpen(true);
+                    } else {
+                      navigate('/cart');
+                    }
+                  }}
                 >
                   Корзина
                 </button>

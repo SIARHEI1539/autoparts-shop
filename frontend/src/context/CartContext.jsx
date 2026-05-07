@@ -12,16 +12,13 @@ export function CartProvider({ children }) {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Получение токена
   const getToken = () => localStorage.getItem('access_token');
 
   // ==================== КОРЗИНА ====================
   
-  // Загрузка корзины с сервера
   const loadCartFromServer = async () => {
     const token = getToken();
     console.log('🔄 Загрузка корзины с сервера, токен:', !!token);
-    
     if (!token) return;
 
     try {
@@ -36,11 +33,9 @@ export function CartProvider({ children }) {
     }
   };
 
-  // Синхронизация локальной корзины с сервером
   const syncLocalCart = async (localCart) => {
     const token = getToken();
     console.log('🔄 Синхронизация локальной корзины:', localCart);
-    
     if (!token || !localCart.length) return;
 
     for (const item of localCart) {
@@ -59,7 +54,6 @@ export function CartProvider({ children }) {
     await loadCartFromServer();
   };
 
-  // Добавление в корзину
   const addToCart = async (product, quantity = 1) => {
     const token = getToken();
     console.log('🛒 addToCart, товар:', product?.id, 'количество:', quantity, 'токен:', !!token);
@@ -98,7 +92,6 @@ export function CartProvider({ children }) {
     }
   };
 
-  // Удаление из корзины
   const removeFromCart = async (productId) => {
     const token = getToken();
     console.log('🗑️ removeFromCart, productId:', productId, 'токен:', !!token);
@@ -131,10 +124,8 @@ export function CartProvider({ children }) {
     }
   };
 
-  // Обновление количества
   const updateQuantity = async (productId, quantity) => {
     console.log('🔄 updateQuantity, productId:', productId, 'quantity:', quantity);
-    
     if (quantity <= 0) {
       removeFromCart(productId);
       return;
@@ -265,30 +256,25 @@ export function CartProvider({ children }) {
   
     if (!token) return false;
 
-      try {
-        const response = await axios.post('http://127.0.0.1:8000/api/favorites/', {
-          part_id: productId
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/api/favorites/', {
+        part_id: productId
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
     
       console.log('📡 Ответ сервера:', response.status);
     
-    // Обновляем localStorage после успешного запроса
-    await loadFavoritesFromServer();
-    
-    // Принудительно обновляем счётчик
-    const updatedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    console.log('❤️ Обновлённый список избранного:', updatedFavorites);
-    
-    window.dispatchEvent(new Event('favoritesUpdated'));
-    
-    return true;
-  } catch (error) {
-    console.error('❌ Ошибка изменения избранного:', error.response?.data || error);
-    return false;
-  }
-};
+      await loadFavoritesFromServer();
+      
+      window.dispatchEvent(new Event('favoritesUpdated'));
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Ошибка изменения избранного:', error.response?.data || error);
+      return false;
+    }
+  };
 
   const getFavoritesCount = () => {
     const token = getToken();
@@ -298,7 +284,6 @@ export function CartProvider({ children }) {
     return JSON.parse(localStorage.getItem('favorites') || '[]').length;
   };
 
-  // Загрузка при старте
   useEffect(() => {
     const token = getToken();
     console.log('🚀 CartProvider инициализация, токен:', !!token);
@@ -328,12 +313,10 @@ export function CartProvider({ children }) {
 
   return (
     <CartContext.Provider value={{
-      // Состояния
       cartItems,
       favorites,
       loading,
       
-      // Корзина
       addToCart,
       removeFromCart,
       updateQuantity,
@@ -343,7 +326,6 @@ export function CartProvider({ children }) {
       loadCartFromServer,
       syncLocalCart,
       
-      // Избранное
       loadFavoritesFromServer,
       syncLocalFavorites,
       toggleFavorite,
