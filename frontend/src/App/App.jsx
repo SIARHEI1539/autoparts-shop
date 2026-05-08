@@ -11,7 +11,7 @@ import Favorites from '../pages/Favorites/Favorites';
 import Cart from '../pages/Cart/Cart';
 import SearchPage from '../pages/SearchPage/SearchPage';
 import Checkout from '../pages/Checkout/Checkout';
-// import Orders from '../pages/Orders/Orders';  
+import Orders from '../pages/Orders/Orders';
 import './App.css';
 
 function App() {
@@ -25,9 +25,16 @@ function App() {
             <Route path="/category/:id" element={<CategoryPage />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/search" element={<SearchPage />} />
-            <Route path="/checkout" element={<Checkout />} />
-            {/* <Route path="/orders" element={<Orders />} /> */}
-            {/* Защищённые маршруты */}
+            <Route path="/checkout" element={
+              <ProtectedRoute>
+                <Checkout />
+              </ProtectedRoute>
+            } />
+            <Route path="/orders" element={
+              <ProtectedRoute>
+                <Orders />
+              </ProtectedRoute>
+            } />
             <Route path="/favorites" element={
               <ProtectedRoute>
                 <Favorites />
