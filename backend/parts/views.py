@@ -1,10 +1,11 @@
 from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 from .models import Part, Review, Cart, Favorite, Order, OrderItem
-from .serializers import PartSerializer, ReviewSerializer, CartSerializer, FavoriteSerializer, OrderSerializer
+from .serializers import PartSerializer, ReviewSerializer, CartSerializer, FavoriteSerializer, OrderSerializer, OrderDetailSerializer
 
 class PartViewSet(viewsets.ModelViewSet):
     queryset = Part.objects.all()
@@ -19,7 +20,6 @@ class PartViewSet(viewsets.ModelViewSet):
         search = self.request.query_params.get('search', None)
         
         if search:
-            # Регистронезависимый поиск
             queryset = queryset.filter(
                 Q(name__icontains=search) |
                 Q(manufacturer__icontains=search) |
@@ -94,7 +94,19 @@ class OrderViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
+        return Order.objects.filter(user=self.request.user).order_by('-created_at')
+
+    @action(detail=False, methods=['delete'])
+    def clear_all(self, request):
+        """Удалить все заказы текущего пользователя"""
+        deleted_count, _ = Order.objects.filter(user=request.user).delete()
+        return Response({'message': f'Удалено {deleted_count} заказов'}, status=status.HTTP_200_OK)
+
+    def retrieve(self, request, *args, **kwargs):
+        """Получение заказа с деталями (товарами)"""
+        instance = self.get_object()
+        serializer = OrderDetailSerializer(instance)
+        return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         user = request.user

@@ -33,12 +33,6 @@ function Header() {
     }
     updateFavoritesCount();
     
-    // ✅ Слушаем событие обновления избранного
-    const handleFavoritesUpdate = () => {
-      console.log('❤️ Событие favoritesUpdated в Header');
-      updateFavoritesCount();
-    };
-    
     window.addEventListener('favoritesUpdated', handleFavoritesUpdate);
     window.addEventListener('storage', updateFavoritesCount);
     
@@ -47,6 +41,11 @@ function Header() {
       window.removeEventListener('storage', updateFavoritesCount);
     };
   }, []);
+
+  const handleFavoritesUpdate = () => {
+    console.log('❤️ Событие favoritesUpdated в Header');
+    updateFavoritesCount();
+  };
 
   const handleLogin = async (userData) => {
     console.log('🟢 Вход выполнен');
@@ -77,6 +76,15 @@ function Header() {
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
+    }
+  };
+
+  const handleProtectedNavigation = (path) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setIsAuthModalOpen(true);
+    } else {
+      navigate(path);
     }
   };
 
@@ -114,17 +122,23 @@ function Header() {
             <ul>
               <li><Link to="/" className="nav-link" onClick={closeMenu}>Главная</Link></li>
               <li><Link to="/catalog" className="nav-link" onClick={closeMenu}>Каталог</Link></li>
+              <li>
+                <button 
+                  className="nav-link orders-btn"
+                  onClick={() => {
+                    handleProtectedNavigation('/orders');
+                    closeMenu();
+                  }}
+                >
+                  Мои заказы
+                </button>
+              </li>
               <li className="favorites-item">
                 <button 
                   className="nav-link favorites-btn"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const token = localStorage.getItem('access_token');
-                    if (!token) {
-                      setIsAuthModalOpen(true);
-                    } else {
-                      navigate('/favorites');
-                    }
+                  onClick={() => {
+                    handleProtectedNavigation('/favorites');
+                    closeMenu();
                   }}
                 >
                   Избранное
@@ -134,14 +148,9 @@ function Header() {
               <li className="cart-item">
                 <button 
                   className="nav-link cart-link"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const token = localStorage.getItem('access_token');
-                    if (!token) {
-                      setIsAuthModalOpen(true);
-                    } else {
-                      navigate('/cart');
-                    }
+                  onClick={() => {
+                    handleProtectedNavigation('/cart');
+                    closeMenu();
                   }}
                 >
                   Корзина
