@@ -1,6 +1,7 @@
-
 from django.contrib.admin import AdminSite
 from django.contrib import admin
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.admin import UserAdmin, GroupAdmin
 from parts.models import Part, Review, Cart, Favorite, Order, OrderItem
 
 class CustomAdminSite(AdminSite):
@@ -11,8 +12,11 @@ class CustomAdminSite(AdminSite):
 # Создаем экземпляр
 custom_admin_site = CustomAdminSite(name='myadmin')
 
-# Регистрация моделей в кастомной админке
+# Регистрация пользователей и групп в кастомной админке
+custom_admin_site.register(User, UserAdmin)
+custom_admin_site.register(Group, GroupAdmin)
 
+# Регистрация моделей приложения parts
 @admin.register(Part, site=custom_admin_site)
 class PartAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'manufacturer', 'sku', 'price', 'stock', 'category']
@@ -58,7 +62,7 @@ class OrderItemInline(admin.TabularInline):
 @admin.register(Order, site=custom_admin_site)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'first_name', 'last_name', 'total_price', 'status', 'paid', 'payment_method', 'created_at']
-    list_filter = ['status', 'paid', 'created_at', 'city']
+    list_filter = ['status', 'paid', 'payment_method', 'created_at', 'city']
     search_fields = ['id', 'user__username', 'first_name', 'last_name', 'email', 'phone']
     list_editable = ['status']
     readonly_fields = ['created_at', 'updated_at', 'total_price']
