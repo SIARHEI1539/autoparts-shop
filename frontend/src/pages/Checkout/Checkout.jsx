@@ -8,6 +8,7 @@ function Checkout() {
   const navigate = useNavigate();
   const { cartItems, getTotalPrice, clearCart } = useCart();
   const [isForAnother, setIsForAnother] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
   const [userData, setUserData] = useState({
     first_name: '',
     last_name: '',
@@ -31,7 +32,6 @@ function Checkout() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Функции для добавления префиксов
   const addPrefix = (value, prefix) => {
     if (value && !value.startsWith(prefix)) {
       return `${prefix} ${value}`;
@@ -59,7 +59,6 @@ function Checkout() {
     setter({ ...data, apartment: value });
   };
 
-  // Загрузка профиля
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
@@ -78,7 +77,6 @@ function Checkout() {
           apartment: profile.profile?.apartment || ''
         };
         setUserData(userInfo);
-        // recipientData НЕ заполняем данными пользователя, оставляем пустым
       }).catch(console.error);
     }
   }, []);
@@ -91,12 +89,10 @@ function Checkout() {
     setRecipientData({ ...recipientData, [e.target.name]: e.target.value });
   };
 
-  // Обработчик переключения чекбокса
   const handleCheckboxChange = (e) => {
     const isChecked = e.target.checked;
     setIsForAnother(isChecked);
     
-    // При переключении НА другого человека - очищаем recipientData
     if (isChecked) {
       setRecipientData({
         first_name: '',
@@ -125,7 +121,6 @@ function Checkout() {
 
     const orderData = isForAnother ? recipientData : userData;
 
-    // Валидация: проверяем что поля не пустые
     if (!orderData.first_name || !orderData.last_name || !orderData.email || !orderData.phone || 
         !orderData.city || !orderData.street || !orderData.house) {
       setError('Пожалуйста, заполните все обязательные поля');
@@ -134,12 +129,29 @@ function Checkout() {
     }
 
     try {
-      await axios.post('http://127.0.0.1:8000/api/orders/', orderData, {
+      // Добавляем способ оплаты в данные заказа
+      const orderPayload = {
+        ...orderData,
+        payment_method: paymentMethod
+      };
+      
+      const orderResponse = await axios.post('http://127.0.0.1:8000/api/orders/', orderPayload, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      const order = orderResponse.data;
+      
+      if (paymentMethod === 'card') {
+        // Для карты заказ уже оплачен в тестовом режиме на бэкенде
+        alert(`✅ Заказ №${order.id} успешно оформлен и ОПЛАЧЕН (тестовый режим)!`);
+      } else if (paymentMethod === 'cash') {
+        alert(`✅ Заказ №${order.id} успешно оформлен! Оплата при получении.`);
+      } else if (paymentMethod === 'erip') {
+        alert(`✅ Заказ №${order.id} успешно оформлен! Оплата через ЕРИП. Скоро вы получите инструкцию.`);
+      }
+      
       clearCart();
-      alert('Заказ успешно оформлен!');
-      navigate('/');
+      navigate('/orders');
     } catch (err) {
       setError(err.response?.data?.error || 'Ошибка при оформлении заказа');
     } finally {
@@ -157,7 +169,6 @@ function Checkout() {
     );
   }
 
-  // Текущие данные для отображения
   const currentData = isForAnother ? recipientData : userData;
   const handleChange = isForAnother ? handleRecipientChange : handleUserChange;
   const cityBlur = isForAnother ? handleCityBlur(setRecipientData, recipientData) : handleCityBlur(setUserData, userData);
@@ -253,9 +264,43 @@ function Checkout() {
                 onBlur={apartmentBlur} 
               />
             </div>
+
+            <div className="payment-methods">
+              <h3>Способ оплаты</h3>
+              <label className="payment-option">
+                <input 
+                  type="radio" 
+                  value="cash" 
+                  checked={paymentMethod === 'cash'} 
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                <span>💵 Наличными при получении</span>
+              </label>
+              <label className="payment-option">
+                <input 
+                  type="radio" 
+                  value="card" 
+                  checked={paymentMethod === 'card'} 
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                <span>💳 Банковской картой онлайн (тестовый режим)</span>
+              </label>
+              <label className="payment-option">
+                <input 
+                  type="radio" 
+                  value="erip" 
+                  checked={paymentMethod === 'erip'} 
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+                <span>🏦 ЕРИП (счёт для оплаты придёт на email)</span>
+              </label>
+            </div>
             
             {error && <div className="error">{error}</div>}
-            <button type="submit" disabled={loading}>{loading ? 'Оформление...' : 'Подтвердить заказ'}</button>
+            
+            <button type="submit" disabled={loading}>
+              {loading ? 'Оформление...' : `Подтвердить заказ на ${getTotalPrice().toFixed(2)} BYN`}
+            </button>
           </form>
         </div>
         <div className="checkout-summary">
