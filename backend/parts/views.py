@@ -1,3 +1,4 @@
+import time
 from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -108,6 +109,30 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer = OrderDetailSerializer(instance)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['post'])
+    def pay(self, request, pk=None):
+        """Тестовая оплата заказа (без реального списания)"""
+        order = self.get_object()
+        
+        if order.paid:
+            return Response({'error': 'Заказ уже оплачен'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        payment_method = request.data.get('payment_method', 'card')
+        
+        # Симулируем успешную оплату
+        order.paid = True
+        order.status = 'paid'
+        order.payment_method = payment_method
+        order.payment_id = f"TEST_{order.id}_{int(time.time())}"
+        order.save()
+        
+        return Response({
+            'message': 'Оплата прошла успешно (тестовый режим)',
+            'order_id': order.id,
+            'payment_id': order.payment_id,
+            'status': order.status
+        })
+
     def create(self, request, *args, **kwargs):
         user = request.user
         cart_items = Cart.objects.filter(user=user)
@@ -118,6 +143,8 @@ class OrderViewSet(viewsets.ModelViewSet):
         data = request.data
         total = 0
 
+        payment_method = data.get('payment_method', 'cash')
+        
         order = Order.objects.create(
             user=user,
             first_name=data.get('first_name', user.first_name),
@@ -128,6 +155,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             street=data.get('street', ''),
             house=data.get('house', ''),
             apartment=data.get('apartment', ''),
+            payment_method=payment_method,
             total_price=0
         )
 
@@ -145,6 +173,13 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         order.total_price = total
         order.save()
+
+        # Если оплата картой онлайн — сразу помечаем как оплаченный (тестовый режим)
+        if payment_method == 'card':
+            order.paid = True
+            order.status = 'paid'
+            order.payment_id = f"TEST_{order.id}_{int(time.time())}"
+            order.save()
 
         # Очищаем корзину
         cart_items.delete()

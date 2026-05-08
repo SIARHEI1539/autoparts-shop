@@ -136,6 +136,7 @@ class Favorite(models.Model):
     def __str__(self):
         return f'{self.user.username} - {self.part.name}'
     
+
 class Order(models.Model):
     STATUS_CHOICES = [
         ('new', 'Новый'),
@@ -146,12 +147,16 @@ class Order(models.Model):
         ('cancelled', 'Отменён'),
     ]
     
+    PAYMENT_METHOD_CHOICES = [
+        ('cash', 'Наличными при получении'),
+        ('card', 'Банковской картой онлайн'),
+    ]
+    
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
     
-    # Данные получателя (копируются из профиля в момент заказа)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -163,11 +168,16 @@ class Order(models.Model):
     
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='cash')
+    paid = models.BooleanField(default=False)
+    payment_id = models.CharField(max_length=100, blank=True, null=True)
+    
     class Meta:
         ordering = ['-created_at']
     
     def __str__(self):
         return f'Заказ #{self.id} - {self.user.username}'
+
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')

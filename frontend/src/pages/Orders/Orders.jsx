@@ -95,6 +95,14 @@ function Orders() {
     return statuses[status] || status;
   };
 
+  const getPaymentMethodText = (method) => {
+  const methods = {
+    'cash': '💵 Наличными при получении',
+    'card': '💳 Банковской картой онлайн',
+  };
+  return methods[method] || method;
+};
+
   if (loading) {
     return (
       <div className="orders-loading">
@@ -191,6 +199,15 @@ function Orders() {
                 <h3>Информация о заказе</h3>
                 <p><strong>Дата:</strong> {formatDate(selectedOrder.created_at)}</p>
                 <p><strong>Статус:</strong> {getStatusText(selectedOrder.status)}</p>
+              </div>
+
+              <div className="detail-section">
+                <h3>Оплата</h3>
+                <p><strong>Способ оплаты:</strong> {getPaymentMethodText(selectedOrder.payment_method)}</p>
+                <p><strong>Статус оплаты:</strong> {selectedOrder.paid ? '✅ Оплачен' : '⏳ Ожидает оплаты'}</p>
+                {selectedOrder.payment_id && (
+                  <p><strong>ID платежа:</strong> {selectedOrder.payment_id}</p>
+                )}
               </div>
 
               <div className="detail-section">
