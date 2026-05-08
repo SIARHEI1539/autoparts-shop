@@ -150,7 +150,6 @@ class Order(models.Model):
     PAYMENT_METHOD_CHOICES = [
         ('cash', 'Наличными при получении'),
         ('card', 'Банковской картой онлайн'),
-        ('erip', 'ЕРИП'),
     ]
     
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders')
@@ -158,7 +157,6 @@ class Order(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
     
-    # Данные получателя (копируются из профиля в момент заказа)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -170,7 +168,6 @@ class Order(models.Model):
     
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     
-    # Поля для оплаты
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='cash')
     paid = models.BooleanField(default=False)
     payment_id = models.CharField(max_length=100, blank=True, null=True)

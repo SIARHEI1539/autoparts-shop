@@ -96,13 +96,12 @@ function Orders() {
   };
 
   const getPaymentMethodText = (method) => {
-    const methods = {
-      'cash': '💵 Наличными при получении',
-      'card': '💳 Банковской картой онлайн',
-      'erip': '🏦 ЕРИП'
-    };
-    return methods[method] || method;
+  const methods = {
+    'cash': '💵 Наличными при получении',
+    'card': '💳 Банковской картой онлайн',
   };
+  return methods[method] || method;
+};
 
   if (loading) {
     return (

@@ -58,7 +58,7 @@ class OrderItemInline(admin.TabularInline):
 @admin.register(Order, site=custom_admin_site)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'first_name', 'last_name', 'total_price', 'status', 'paid', 'payment_method', 'created_at']
-    list_filter = ['status', 'paid', 'payment_method', 'created_at', 'city']
+    list_filter = ['status', 'paid', 'created_at', 'city']
     search_fields = ['id', 'user__username', 'first_name', 'last_name', 'email', 'phone']
     list_editable = ['status']
     readonly_fields = ['created_at', 'updated_at', 'total_price']

@@ -146,8 +146,6 @@ function Checkout() {
         alert(`✅ Заказ №${order.id} успешно оформлен и ОПЛАЧЕН (тестовый режим)!`);
       } else if (paymentMethod === 'cash') {
         alert(`✅ Заказ №${order.id} успешно оформлен! Оплата при получении.`);
-      } else if (paymentMethod === 'erip') {
-        alert(`✅ Заказ №${order.id} успешно оформлен! Оплата через ЕРИП. Скоро вы получите инструкцию.`);
       }
       
       clearCart();
@@ -284,15 +282,6 @@ function Checkout() {
                   onChange={(e) => setPaymentMethod(e.target.value)}
                 />
                 <span>💳 Банковской картой онлайн (тестовый режим)</span>
-              </label>
-              <label className="payment-option">
-                <input 
-                  type="radio" 
-                  value="erip" 
-                  checked={paymentMethod === 'erip'} 
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                />
-                <span>🏦 ЕРИП (счёт для оплаты придёт на email)</span>
               </label>
             </div>
             
