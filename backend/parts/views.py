@@ -3,22 +3,32 @@ from rest_framework import viewsets, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 from .models import Part, Review, Cart, Favorite, Order, OrderItem
 from .serializers import PartSerializer, ReviewSerializer, CartSerializer, FavoriteSerializer, OrderSerializer, OrderDetailSerializer
 
+
+class PartPagination(PageNumberPagination):
+    page_size = 3
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 class PartViewSet(viewsets.ModelViewSet):
     queryset = Part.objects.all()
     serializer_class = PartSerializer
+    pagination_class = PartPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['category']
+    filterset_fields = ['category', 'manufacturer']
     ordering_fields = ['name', 'price', 'created_at']
     ordering = ['-created_at']
 
     def get_queryset(self):
         queryset = super().get_queryset()
         search = self.request.query_params.get('search', None)
+        in_stock = self.request.query_params.get('in_stock', None)
         
         if search:
             queryset = queryset.filter(
@@ -26,14 +36,46 @@ class PartViewSet(viewsets.ModelViewSet):
                 Q(manufacturer__icontains=search) |
                 Q(sku__icontains=search)
             )
+
+        if in_stock == 'true':
+            queryset = queryset.filter(stock__gt=0)
         
         return queryset
+
+    @action(detail=False, methods=['get'])
+    def suggestions(self, request):
+        """Автоподсказки для поиска"""
+        query = request.query_params.get('q', '')
+        if len(query) < 2:
+            return Response([])
+        
+        # Ищем по названию, производителю и артикулу
+        parts = Part.objects.filter(
+            Q(name__icontains=query) |
+            Q(manufacturer__icontains=query) |
+            Q(sku__icontains=query)
+        )[:20] 
+        
+        suggestions = []
+        for part in parts:
+            suggestions.append({
+                'id': part.id,
+                'name': part.name,
+                'manufacturer': part.manufacturer,
+                'sku': part.sku,
+                'price': str(part.price),
+                'image': part.image.url if part.image else None
+            })
+        
+        return Response(suggestions)
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['part']
+
 
 class CartViewSet(viewsets.ModelViewSet):
     serializer_class = CartSerializer
@@ -62,6 +104,7 @@ class CartViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class FavoriteViewSet(viewsets.ModelViewSet):
     serializer_class = FavoriteSerializer
@@ -99,19 +142,16 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['delete'])
     def clear_all(self, request):
-        """Удалить все заказы текущего пользователя"""
         deleted_count, _ = Order.objects.filter(user=request.user).delete()
         return Response({'message': f'Удалено {deleted_count} заказов'}, status=status.HTTP_200_OK)
 
     def retrieve(self, request, *args, **kwargs):
-        """Получение заказа с деталями (товарами)"""
         instance = self.get_object()
         serializer = OrderDetailSerializer(instance)
         return Response(serializer.data)
 
     @action(detail=True, methods=['post'])
     def pay(self, request, pk=None):
-        """Тестовая оплата заказа (без реального списания)"""
         order = self.get_object()
         
         if order.paid:
@@ -119,7 +159,6 @@ class OrderViewSet(viewsets.ModelViewSet):
         
         payment_method = request.data.get('payment_method', 'card')
         
-        # Симулируем успешную оплату
         order.paid = True
         order.status = 'paid'
         order.payment_method = payment_method
@@ -174,14 +213,12 @@ class OrderViewSet(viewsets.ModelViewSet):
         order.total_price = total
         order.save()
 
-        # Если оплата картой онлайн — сразу помечаем как оплаченный (тестовый режим)
         if payment_method == 'card':
             order.paid = True
             order.status = 'paid'
             order.payment_id = f"TEST_{order.id}_{int(time.time())}"
             order.save()
 
-        # Очищаем корзину
         cart_items.delete()
 
         serializer = self.get_serializer(order)
