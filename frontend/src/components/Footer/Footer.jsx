@@ -1,49 +1,83 @@
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './Footer.css';
 
-function Footer() {
+function Footer({ onAuthRequired }) {
   const currentYear = new Date().getFullYear();
+  const navigate = useNavigate();
+
+  const handleProtectedClick = (path, e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('access_token');
+    
+    if (!token) {
+      // Вызываем открытие модального окна
+      if (onAuthRequired) {
+        onAuthRequired();
+      } else {
+        alert('Пожалуйста, войдите в аккаунт');
+      }
+    } else {
+      navigate(path);
+    }
+  };
 
   return (
     <footer className="footer">
-      <div className="footer-content">
-        {/* Колонка 1: Контакты */}
+      <div className="footer-container">
         <div className="footer-section">
-          <h3>📞 Контакты</h3>
-          <p>Телефон: +375 (29) 123-45-67</p>
-          <p>Email: shop@autoparts.by</p>
-          <p>Адрес: г. Минск, ул. Примерная, 123</p>
-          <p>Время работы: Пн-Пт 9:00-19:00</p>
+          <h4>Автозапчасти.BY</h4>
+          <p>Оригинальные запчасти для всех марок автомобилей</p>
+          <p className="footer-copyright">© {currentYear} Автозапчасти.BY</p>
         </div>
 
-        {/* Колонка 2: Информация */}
         <div className="footer-section">
-          <h3>📜 Информация</h3>
+          <h4>Информация</h4>
           <ul>
-            <li><a href="/about">О магазине</a></li>
-            <li><a href="/guarantee">Гарантия</a></li>
-            <li><a href="/return">Возврат товара</a></li>
-            <li><a href="/privacy">Политика конфиденциальности</a></li>
-            <li><a href="/vacancies">Вакансии</a></li>
+            <li><Link to="/catalog">Каталог</Link></li>
+            <li>
+              <a 
+                href="/orders" 
+                onClick={(e) => handleProtectedClick('/orders', e)}
+                style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }}
+              >
+                Мои заказы
+              </a>
+            </li>
+            <li>
+              <a 
+                href="/favorites" 
+                onClick={(e) => handleProtectedClick('/favorites', e)}
+                style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }}
+              >
+                Избранное
+              </a>
+            </li>
+            <li>
+              <a 
+                href="/cart" 
+                onClick={(e) => handleProtectedClick('/cart', e)}
+                style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }}
+              >
+                Корзина
+              </a>
+            </li>
           </ul>
         </div>
 
-        {/* Колонка 3: Оплата и доставка */}
         <div className="footer-section">
-          <h3>💳 Оплата и доставка</h3>
-          <ul>
-            <li><a href="/payment">Способы оплаты</a></li>
-            <li><a href="/delivery">Условия доставки</a></li>
-            <li><a href="/track">Отследить заказ</a></li>
-            <li><a href="/pickup">Самовывоз</a></li>
-          </ul>
+          <h4>Контакты</h4>
+          <p>📞 +375 (29) 123-45-67</p>
+          <p>📧 info@autoparts.by</p>
+          <p>📍 г. Минск, ул. Примерная, 123</p>
         </div>
-      </div>
 
-      {/* Копирайт */}
-      <div className="footer-bottom">
-        <p>© {currentYear} Autoparts.by. Все права защищены.</p>
-        <p>Магазин автозапчастей в Минске и Беларуси</p>
+        <div className="footer-section">
+          <h4>Часы работы</h4>
+          <p>🕐 Пн-Пт: 9:00 - 19:00</p>
+          <p>🕐 Сб: 10:00 - 16:00</p>
+          <p>🕐 Вс: Выходной</p>
+        </div>
       </div>
     </footer>
   );
