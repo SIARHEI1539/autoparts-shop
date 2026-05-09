@@ -183,3 +183,37 @@
 .pagination-info {
   color: #666;
 }
+
+.category-content {
+  display: flex;
+  gap: 2rem;
+}
+
+.category-sidebar {
+  flex: 0 0 250px;
+}
+
+.category-products {
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .category-content {
+    flex-direction: column;
+  }
+  
+  .category-sidebar {
+    flex: auto;
+  }
+}
+
+.product-stock {
+  font-size: 0.75rem;
+  color: #28a745;
+  margin: 0.25rem 0.75rem;
+}
+
+.add-to-cart:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}

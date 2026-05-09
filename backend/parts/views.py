@@ -13,7 +13,7 @@ from .serializers import PartSerializer, ReviewSerializer, CartSerializer, Favor
 class PartPagination(PageNumberPagination):
     page_size = 3
     page_size_query_param = 'page_size'
-    max_page_size = 20
+    max_page_size = 100
 
 
 class PartViewSet(viewsets.ModelViewSet):
@@ -21,13 +21,14 @@ class PartViewSet(viewsets.ModelViewSet):
     serializer_class = PartSerializer
     pagination_class = PartPagination
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['category']
+    filterset_fields = ['category', 'manufacturer']
     ordering_fields = ['name', 'price', 'created_at']
     ordering = ['-created_at']
 
     def get_queryset(self):
         queryset = super().get_queryset()
         search = self.request.query_params.get('search', None)
+        in_stock = self.request.query_params.get('in_stock', None)
         
         if search:
             queryset = queryset.filter(
@@ -35,6 +36,9 @@ class PartViewSet(viewsets.ModelViewSet):
                 Q(manufacturer__icontains=search) |
                 Q(sku__icontains=search)
             )
+
+        if in_stock == 'true':
+            queryset = queryset.filter(stock__gt=0)
         
         return queryset
 

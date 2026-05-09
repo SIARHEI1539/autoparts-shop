@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useCart } from '../../context/CartContext';
 import AuthModal from '../../components/AuthModal/AuthModal';
 import Pagination from '../../components/Pagination/Pagination';
+import Filters from '../../components/Filters/Filters';
 import './CategoryPage.css';
 
 const categoryNames = {
@@ -26,19 +27,29 @@ function CategoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
+  const [filters, setFilters] = useState({ manufacturers: [] });
+  const [filterKey, setFilterKey] = useState(0);
   const { addToCart } = useCart();
 
   useEffect(() => {
     setCurrentPage(1);
+    setFilters({ manufacturers: [] });
+    setFilterKey(prev => prev + 1);
   }, [id]);
 
   useEffect(() => {
     const fetchParts = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          `http://127.0.0.1:8000/api/parts/?category=${id}&page=${currentPage}`
-        );
+        
+        let url = `http://127.0.0.1:8000/api/parts/?category=${id}&page=${currentPage}`;
+        
+        // Добавляем фильтр по производителям
+        if (filters.manufacturers && filters.manufacturers.length > 0) {
+          url += `&manufacturer=${filters.manufacturers.join('&manufacturer=')}`;
+        }
+        
+        const response = await axios.get(url);
         
         if (response.data.results) {
           setParts(response.data.results);
@@ -57,7 +68,13 @@ function CategoryPage() {
       }
     };
     fetchParts();
-  }, [id, currentPage]);
+  }, [id, currentPage, filters]);
+
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
+    setFilterKey(prev => prev + 1);
+  };
 
   const handleAddToCart = (part) => {
     const token = localStorage.getItem('access_token');
@@ -74,7 +91,6 @@ function CategoryPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Добавляем стили прямо в компонент на всякий случай
   const gridStyles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 1fr)',
@@ -91,15 +107,6 @@ function CategoryPage() {
     );
   }
 
-  if (parts.length === 0) {
-    return (
-      <div className="category-empty">
-        <p>Нет запчастей в этой категории</p>
-        <Link to="/catalog">Вернуться к категориям</Link>
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="category-page">
@@ -108,38 +115,66 @@ function CategoryPage() {
           <p className="category-count">Найдено {totalProducts} запчастей (страница {currentPage} из {totalPages})</p>
         </div>
         
-        <div className="products-grid" style={gridStyles}>
-          {parts.map((part) => (
-            <div key={part.id} className="product-card">
-              <Link to={`/product/${part.id}`} className="product-link">
-                <div className="product-image">
-                  {part.image ? (
-                    <img src={part.image} alt={part.name} />
-                  ) : (
-                    <div className="no-image">🚗</div>
-                  )}
+        <div className="category-content">
+          <aside className="category-sidebar">
+            <Filters 
+              key={filterKey}
+              category={id} 
+              onFilterChange={handleFilterChange} 
+            />
+          </aside>
+          
+          <div className="category-products">
+            {parts.length === 0 ? (
+              <div className="category-empty">
+                <p>Нет запчастей в этой категории с выбранными фильтрами</p>
+                <button onClick={() => {
+                  setFilters({ manufacturers: [] });
+                  setFilterKey(prev => prev + 1);
+                }}>
+                  Сбросить фильтры
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="products-grid" style={gridStyles}>
+                  {parts.map((part) => (
+                    <div key={part.id} className="product-card">
+                      <Link to={`/product/${part.id}`} className="product-link">
+                        <div className="product-image">
+                          {part.image ? (
+                            <img src={part.image} alt={part.name} />
+                          ) : (
+                            <div className="no-image">🚗</div>
+                          )}
+                        </div>
+                        <h3 className="product-title">{part.name}</h3>
+                        <p className="product-manufacturer">{part.manufacturer}</p>
+                        <p className="product-price">{part.price} BYN</p>
+                        <p className="product-stock">В наличии: {part.stock} шт.</p>
+                      </Link>
+                      <button 
+                        className="add-to-cart"
+                        onClick={() => handleAddToCart(part)}
+                        disabled={part.stock === 0}
+                      >
+                        {part.stock === 0 ? 'Нет в наличии' : '🛒 В корзину'}
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <h3 className="product-title">{part.name}</h3>
-                <p className="product-manufacturer">{part.manufacturer}</p>
-                <p className="product-price">{part.price} BYN</p>
-              </Link>
-              <button 
-                className="add-to-cart"
-                onClick={() => handleAddToCart(part)}
-              >
-                🛒 В корзину
-              </button>
-            </div>
-          ))}
-        </div>
 
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        )}
+                {totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+              </>
+            )}
+          </div>
+        </div>
       </div>
       
       <AuthModal 
