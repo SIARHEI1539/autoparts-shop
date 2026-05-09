@@ -42,6 +42,33 @@ class PartViewSet(viewsets.ModelViewSet):
         
         return queryset
 
+    @action(detail=False, methods=['get'])
+    def suggestions(self, request):
+        """Автоподсказки для поиска"""
+        query = request.query_params.get('q', '')
+        if len(query) < 2:
+            return Response([])
+        
+        # Ищем по названию, производителю и артикулу
+        parts = Part.objects.filter(
+            Q(name__icontains=query) |
+            Q(manufacturer__icontains=query) |
+            Q(sku__icontains=query)
+        )[:20] 
+        
+        suggestions = []
+        for part in parts:
+            suggestions.append({
+                'id': part.id,
+                'name': part.name,
+                'manufacturer': part.manufacturer,
+                'sku': part.sku,
+                'price': str(part.price),
+                'image': part.image.url if part.image else None
+            })
+        
+        return Response(suggestions)
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()

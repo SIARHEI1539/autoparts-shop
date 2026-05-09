@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import AuthModal from '../AuthModal/AuthModal';
 import ProfileModal from '../ProfileModal/ProfileModal';
+import SearchAutocomplete from '../SearchAutocomplete/SearchAutocomplete';
 import './Header.css';
 
 function Header() {
@@ -11,7 +12,6 @@ function Header() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [favoritesCount, setFavoritesCount] = useState(0);
-  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { getTotalCount, clearCart, loadCartFromServer, loadFavoritesFromServer } = useCart();
   const cartCount = getTotalCount();
@@ -71,14 +71,6 @@ function Header() {
     navigate('/');
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
-    }
-  };
-
   const handleProtectedNavigation = (path) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -102,15 +94,9 @@ function Header() {
             </Link>
           </div>
 
-          <form className="search-form" onSubmit={handleSearch}>
-            <input
-              type="text"
-              placeholder="Поиск запчастей..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button type="submit">🔍</button>
-          </form>
+          <div className="search-wrapper">
+            <SearchAutocomplete />
+          </div>
 
           <button className="burger-menu" onClick={toggleMenu}>
             <span className={`burger-line ${menuOpen ? 'open' : ''}`}></span>
