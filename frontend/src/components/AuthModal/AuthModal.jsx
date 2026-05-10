@@ -28,6 +28,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
     password_confirm: ''
   });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const { syncLocalCart, loadCartFromServer, loadFavoritesFromServer, syncLocalFavorites } = useCart();
@@ -65,12 +66,16 @@ function AuthModal({ isOpen, onClose, onLogin }) {
     const value = e.target.value;
     setFormData({ ...formData, username: value });
     setValidationErrors({ ...validationErrors, username: validateUsername(value) });
+    setError('');
+    setSuccess('');
   };
 
   const handleEmailChange = (e) => {
     const value = e.target.value;
     setFormData({ ...formData, email: value });
     setValidationErrors({ ...validationErrors, email: validateEmail(value) });
+    setError('');
+    setSuccess('');
   };
 
   const handlePasswordChange = (e) => {
@@ -81,6 +86,8 @@ function AuthModal({ isOpen, onClose, onLogin }) {
       password: validatePassword(value),
       password_confirm: validatePasswordConfirm(value, formData.password_confirm)
     });
+    setError('');
+    setSuccess('');
   };
 
   const handlePasswordConfirmChange = (e) => {
@@ -90,11 +97,14 @@ function AuthModal({ isOpen, onClose, onLogin }) {
       ...validationErrors, 
       password_confirm: validatePasswordConfirm(formData.password, value)
     });
+    setError('');
+    setSuccess('');
   };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
+    setSuccess('');
   };
 
   const handleCityBlur = (e) => {
@@ -158,12 +168,14 @@ function AuthModal({ isOpen, onClose, onLogin }) {
           password_confirm: passwordConfirmError
         });
         setError('Пожалуйста, исправьте ошибки в форме');
+        setSuccess('');
         return;
       }
     }
     
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
       if (isLogin) {
@@ -223,8 +235,6 @@ function AuthModal({ isOpen, onClose, onLogin }) {
           submitData.append('avatar', formData.avatar);
         }
         
-        console.log('Отправляем:', Object.fromEntries(submitData));
-        
         await axios.post('http://127.0.0.1:8000/api/register/', submitData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
@@ -241,17 +251,19 @@ function AuthModal({ isOpen, onClose, onLogin }) {
           password_confirm: ''
         });
         setAvatarPreview(null);
-        setError('Регистрация прошла успешно! Теперь войдите.');
+        setSuccess('✅ Регистрация прошла успешно! Теперь войдите.');
+        setError('');
       }
     } catch (err) {
       console.error('Ошибка:', err.response?.data);
       if (err.response?.data?.username) {
-        setError('Пользователь с таким логином уже существует');
+        setError('❌ Пользователь с таким логином уже существует');
       } else if (err.response?.data?.email) {
-        setError('Пользователь с таким email уже существует');
+        setError('❌ Пользователь с таким email уже существует');
       } else {
-        setError(err.response?.data?.detail || 'Произошла ошибка при регистрации');
+        setError(err.response?.data?.detail || '❌ Произошла ошибка при регистрации');
       }
+      setSuccess('');
     } finally {
       setLoading(false);
     }
@@ -268,6 +280,7 @@ function AuthModal({ isOpen, onClose, onLogin }) {
         <button className="auth-modal-close" onClick={onClose}>×</button>
         <h2>{isLogin ? 'Вход' : 'Регистрация'}</h2>
         {error && <div className="auth-error">{error}</div>}
+        {success && <div className="auth-success">{success}</div>}
         
         <form onSubmit={handleSubmit}>
           <div className="form-field">
@@ -401,7 +414,11 @@ function AuthModal({ isOpen, onClose, onLogin }) {
         
         <div className="auth-switch">
           {isLogin ? 'Нет аккаунта?' : 'Уже есть аккаунт?'}
-          <button onClick={() => setIsLogin(!isLogin)}>{isLogin ? 'Зарегистрироваться' : 'Войти'}</button>
+          <button onClick={() => {
+            setIsLogin(!isLogin);
+            setError('');
+            setSuccess('');
+          }}>{isLogin ? 'Зарегистрироваться' : 'Войти'}</button>
         </div>
       </div>
     </div>
